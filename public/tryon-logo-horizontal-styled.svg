@@ -1,0 +1,84 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Text gradient matching theme -->
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9333ea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Circle gradient -->
+    <linearGradient id="circleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c084fc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- "Try" text -->
+  <text x="10" y="42" 
+        font-family="'Arial Black', Arial, sans-serif" 
+        font-size="36" 
+        font-weight="900" 
+        fill="url(#textGrad)"
+        font-style="italic"
+        letter-spacing="-1">
+    Try
+  </text>
+  
+  <!-- Circle with hanger icon (replacing 'O') -->
+  <g transform="translate(95, 30)">
+    <!-- Outer circle -->
+    <circle cx="0" cy="0" r="20" fill="white" stroke="url(#circleGrad)" stroke-width="3"/>
+    
+    <!-- Inner circle background -->
+    <circle cx="0" cy="0" r="16" fill="url(#circleGrad)" opacity="0.1"/>
+    
+    <!-- Hanger icon inside circle -->
+    <g transform="translate(0, -2)">
+      <!-- Hook -->
+      <path d="M 0,-8 Q -3,-8 -3,-5 Q -3,-2 0,0" 
+            fill="none" 
+            stroke="url(#circleGrad)" 
+            stroke-width="2" 
+            stroke-linecap="round"/>
+      
+      <!-- Bar -->
+      <line x1="-8" y1="5" x2="8" y2="5" 
+            stroke="url(#circleGrad)" 
+            stroke-width="2" 
+            stroke-linecap="round"/>
+      
+      <!-- Sides -->
+      <line x1="-8" y1="5" x2="-5" y2="0" 
+            stroke="url(#circleGrad)" 
+            stroke-width="1.5" 
+            stroke-linecap="round"/>
+      <line x1="8" y1="5" x2="5" y2="0" 
+            stroke="url(#circleGrad)" 
+            stroke-width="1.5" 
+            stroke-linecap="round"/>
+      
+      <!-- Sparkle -->
+      <circle cx="10" cy="3" r="1" fill="#f472b6" filter="url(#glow)"/>
+    </g>
+  </g>
+  
+  <!-- "n" text -->
+  <text x="120" y="42" 
+        font-family="'Arial Black', Arial, sans-serif" 
+        font-size="36" 
+        font-weight="900" 
+        fill="url(#textGrad)"
+        font-style="italic"
+        letter-spacing="-1">
+    n
+  </text>
+</svg>

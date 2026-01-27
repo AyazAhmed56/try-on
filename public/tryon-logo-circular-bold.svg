@@ -1,0 +1,122 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Bold gradient -->
+    <linearGradient id="boldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#9333ea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Background gradient -->
+    <radialGradient id="bgRadial">
+      <stop offset="0%" style="stop-color:#faf5ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Icon gradient -->
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c084fc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow effect -->
+    <filter id="neonGlow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Drop shadow -->
+    <filter id="dropShadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#7c3aed" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer glow circle -->
+  <circle cx="200" cy="200" r="195" fill="url(#bgRadial)"/>
+  
+  <!-- Main circle with gradient stroke -->
+  <circle cx="200" cy="200" r="175" fill="white" stroke="url(#boldGradient)" stroke-width="12" filter="url(#dropShadow)"/>
+  
+  <!-- Inner decorative circles -->
+  <circle cx="200" cy="200" r="155" fill="none" stroke="url(#boldGradient)" stroke-width="2" opacity="0.2"/>
+  <circle cx="200" cy="200" r="145" fill="none" stroke="url(#boldGradient)" stroke-width="1" opacity="0.15"/>
+  
+  <!-- Stylized T-shirt/Hanger icon -->
+  <g transform="translate(200, 150)">
+    <!-- Hook circle -->
+    <circle cx="0" cy="-35" r="8" fill="url(#iconGrad)" filter="url(#neonGlow)"/>
+    
+    <!-- Hanger hook -->
+    <path d="M 0,-27 L 0,-10" 
+          stroke="url(#iconGrad)" 
+          stroke-width="6" 
+          stroke-linecap="round"
+          filter="url(#neonGlow)"/>
+    
+    <!-- T-shirt shape -->
+    <g>
+      <!-- Shoulders/sleeves -->
+      <path d="M -35,-5 L -50,10 L -50,20 L -35,20 L -35,40 L 35,40 L 35,20 L 50,20 L 50,10 L 35,-5" 
+            fill="url(#iconGrad)" 
+            opacity="0.9"
+            filter="url(#neonGlow)"/>
+      
+      <!-- Neck -->
+      <path d="M -15,-5 Q -15,-15 0,-15 Q 15,-15 15,-5" 
+            fill="white"/>
+      
+      <!-- Body -->
+      <rect x="-35" y="20" width="70" height="20" fill="url(#iconGrad)" opacity="0.9"/>
+    </g>
+    
+    <!-- Accent lines -->
+    <line x1="-35" y1="30" x2="35" y2="30" stroke="white" stroke-width="2" opacity="0.3"/>
+  </g>
+  
+  <!-- Decorative stars with glow -->
+  <g filter="url(#neonGlow)">
+    <path d="M 80,120 L 83,130 L 93,133 L 83,136 L 80,146 L 77,136 L 67,133 L 77,130 Z" fill="#c084fc" opacity="0.8"/>
+    <path d="M 320,120 L 323,130 L 333,133 L 323,136 L 320,146 L 317,136 L 307,133 L 317,130 Z" fill="#f472b6" opacity="0.8"/>
+    <path d="M 70,250 L 72,257 L 79,259 L 72,261 L 70,268 L 68,261 L 61,259 L 68,257 Z" fill="#ec4899" opacity="0.7"/>
+    <path d="M 330,250 L 332,257 L 339,259 L 332,261 L 330,268 L 328,261 L 321,259 L 328,257 Z" fill="#a855f7" opacity="0.7"/>
+  </g>
+  
+  <!-- Brand name -->
+  <g>
+    <text x="200" y="270" 
+          font-family="'Arial Black', 'Helvetica Bold', sans-serif" 
+          font-size="52" 
+          font-weight="900" 
+          text-anchor="middle" 
+          fill="url(#boldGradient)"
+          letter-spacing="2">
+      TRY ON
+    </text>
+  </g>
+  
+  <!-- Decorative underline -->
+  <path d="M 110,285 L 290,285" 
+        stroke="url(#boldGradient)" 
+        stroke-width="3" 
+        opacity="0.4"
+        stroke-linecap="round"/>
+  
+  <!-- Tagline -->
+  <text x="200" y="312" 
+        font-family="Arial, sans-serif" 
+        font-size="15" 
+        font-weight="700" 
+        text-anchor="middle" 
+        fill="#6b7280"
+        letter-spacing="6">
+    SMART FASHION
+  </text>
+  
+  <!-- Bottom accent dots -->
+  <circle cx="105" cy="285" r="3" fill="#9333ea" opacity="0.7"/>
+  <circle cx="295" cy="285" r="3" fill="#db2777" opacity="0.7"/>
+</svg>
