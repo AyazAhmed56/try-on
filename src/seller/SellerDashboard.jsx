@@ -32,7 +32,7 @@ const SellerDashboard = () => {
 
   const handleLogout = async () => {
     // await supabase.auth.signOut();
-    navigate("/", { replace: true });
+    navigate("/login", { replace: true });
   };
 
   useEffect(() => {
@@ -315,40 +315,42 @@ const SellerDashboard = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {myItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white/80 backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-56 object-cover"
-                  />
-                  <div className="p-5">
-                    <h3 className="font-semibold text-lg text-gray-800 mb-2">
-                      {item.name}
-                    </h3>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-2xl font-bold text-purple-600">
-                        ₹{item.price}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm text-gray-600">
-                          {item.rating.toFixed(1)}
+                <Link to={`/seller/items/${item.id}`}>
+                  <div
+                    key={item.id}
+                    className="bg-white/80 backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-56 object-cover"
+                    />
+                    <div className="p-5">
+                      <h3 className="font-semibold text-lg text-gray-800 mb-2">
+                        {item.name}
+                      </h3>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-2xl font-bold text-purple-600">
+                          ₹{item.price}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm text-gray-600">
+                            {item.rating.toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <span>
+                          Stock:{" "}
+                          <span className="font-semibold text-gray-800">
+                            {item.stock}
+                          </span>
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>
-                        Stock:{" "}
-                        <span className="font-semibold text-gray-800">
-                          {item.stock}
-                        </span>
-                      </span>
-                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 
