@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import { ArrowLeft, Star, Package, Tag, Palette, Ruler } from "lucide-react";
+import BackButtonByRole from "./BackButtonByRole";
 
-const SellerItemView = () => {
+const ItemView = () => {
   const { id } = useParams();
   const [item, setItem] = useState(null);
 
@@ -57,13 +58,7 @@ const SellerItemView = () => {
       </div>
 
       <div className="relative max-w-6xl mx-auto">
-        <Link
-          to="/my-items"
-          className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to My Items
-        </Link>
+        <BackButtonByRole />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Images */}
@@ -317,4 +312,4 @@ const SellerItemView = () => {
   );
 };
 
-export default SellerItemView;
+export default ItemView;

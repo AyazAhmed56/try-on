@@ -115,7 +115,7 @@ const UnifiedHomePage = () => {
                   Continue your shopping journey
                 </p>
                 <Link
-                  to="/customer/home"
+                  to="/customer/dashboard"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200"
                 >
                   Go to Shopping
