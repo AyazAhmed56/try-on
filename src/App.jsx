@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import CustomerDashboard from "./customer/CustomerDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Role from "./pages/Role";
@@ -21,9 +20,10 @@ import ItemView from "./pages/ItemView";
 import CookiePolicy from "./components/CookiePolicy";
 import OrderReceipt from "./seller/OrderReceipt";
 // import CustomerAllItems from "./customer/CustomerAllItems";
-// import CustomerWishlist from "./customer/CustomerWishlist";
-// import CustomerCart from "./customer/CustomerCart";
-// import CustomerOrder from "./customer/CustomerOrder";
+import BrowseProducts from "./customer/BrowseProducts";
+import Wishlist from "./customer/Wishlist";
+import Dashboard from "./customer/Dashboard";
+import Cart from "./customer/Cart";
 // import CustomerReviews from "./customer/CustomerReviews";
 // import CustomerOffers from "./customer/CustomerOffers";
 // import InvoiceDownload from "./components/InvoiceDownload";
@@ -31,6 +31,9 @@ import OrderReceipt from "./seller/OrderReceipt";
 // import ProductRating from "./components/ProductRating";
 // import FestivalOfferPage from "./pages/FestivalOfferPage";
 // import DiscountSalesPage from "./pages/DiscountSalesPage";
+import MyOrders from "./customer/MyOrders";
+import Settings from "./customer/Settings";
+import Notifications from "./customer/Notifications";
 
 const App = () => {
   return (
@@ -39,7 +42,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<UnifiedHomePage />} />
           {/* <Route path="/customer/home" element={<CustomerDashboard />} /> */}
-          <Route path="/customer/dashboard" element={<CustomerDashboard />} /> 
+          <Route path="/customer/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/role" element={<Role />} />
@@ -63,10 +66,13 @@ const App = () => {
             element={<OtherSellerReviewsAndItems />}
           />
           <Route path="/order-receipt" element={<OrderReceipt />} />
-          {/* <Route path="/customer/wishlist" element={<CustomerWishlist />} />
-          <Route path="/customer/all-items" element={<CustomerAllItems />} />
-          <Route path="/customer/cart" element={<CustomerCart />} />
-          <Route path="/customer/orders" element={<CustomerOrder />} /> */}
+          <Route path="/customer/wishlist" element={<Wishlist />} />
+          <Route path="/customer/products" element={<BrowseProducts />} />
+          <Route path="/customer/cart" element={<Cart />} />
+          <Route path="/customer/settings" element={<Settings />} />
+          <Route path="/customer/notifications" element={<Notifications />} />
+          {/*<Route path="/customer/all-items" element={<CustomerAllItems />} />   */}
+          <Route path="/customer/orders" element={<MyOrders />} />
           <Route path="/tryon-info" element={<TryOnPages />} />
           {/* <Route path="/customer/reviews" element={<CustomerReviews />} />
           <Route path="/customer/offers" element={<CustomerOffers />} /> */}

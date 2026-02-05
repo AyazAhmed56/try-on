@@ -1,8 +1,16 @@
 import React, { useState, useRef } from "react";
-import { User, Calendar, Phone, MapPin, Camera, Save } from "lucide-react";
+import {
+  User,
+  Calendar,
+  Phone,
+  MapPin,
+  Camera,
+  Save,
+  ArrowLeft,
+} from "lucide-react";
 import { supabase } from "../services/supabase";
 import { uploadImage } from "../services/uploadImage";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CustomerProfile = () => {
   const [profileImage, setProfileImage] = useState(null);
@@ -66,6 +74,14 @@ const CustomerProfile = () => {
         <div className="absolute top-20 left-10 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-20 animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-300 rounded-full blur-3xl opacity-20 animate-pulse delay-1000"></div>
       </div>
+
+      <Link
+        to="/customer/dashboard"
+        className="px-4 py-2 rounded-xl w-35 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center space-x-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Dashboard</span>
+      </Link>
 
       <div className="relative max-w-3xl mx-auto">
         {/* Header */}

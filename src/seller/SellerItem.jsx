@@ -34,28 +34,28 @@ const SellerItem = () => {
         .from("outfits")
         .select(
           `
-          id,
-          name,
-          category,
-          price,
-          discount_price,
-          stock,
-          created_at,
+  id,
+  name,
+  category,
+  price,
+  discount_price,
+  stock_quantity,
+  created_at,
 
-          outfit_images (
-            image_url,
-            is_main
-          ),
+  outfit_images (
+    image_url,
+    is_main
+  ),
 
-          outfit_reviews (
-            rating
-          ),
+  outfit_variants (
+    size,
+    color
+  ),
 
-          outfit_variants (
-            size,
-            color
-          )
-        `,
+  outfit_reviews (
+    rating
+  )
+`,
         )
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false });
@@ -67,9 +67,11 @@ const SellerItem = () => {
       }
 
       const formatted = data.map((item) => {
-        const ratings = item.outfit_reviews.map((r) => r.rating);
+        const ratings = item.outfit_reviews?.map((r) => r.rating) || [];
         const avgRating =
-          ratings.reduce((a, b) => a + b, 0) / (ratings.length || 1);
+          ratings.length > 0
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+            : 0;
 
         const mainImage =
           item.outfit_images.find((img) => img.is_main)?.image_url ||
@@ -77,20 +79,20 @@ const SellerItem = () => {
 
         // status derived from stock
         let status = "active";
-        if (item.stock === 0) status = "out-of-stock";
-        else if (item.stock <= 5) status = "low-stock";
+        if (item.stock_quantity === 0) status = "out-of-stock";
+        else if (item.stock_quantity <= 5) status = "low-stock";
 
         return {
           id: item.id,
           name: item.name,
           category: item.category,
           price: item.discount_price || item.price,
-          stock: item.stock,
+          stock_quantity: item.stock_quantity,
           rating: avgRating.toFixed(1),
-          reviewsCount: item.outfit_reviews.length,
+          reviewsCount: item.outfit_reviews?.length || 0,
           image: mainImage,
           status,
-          variantsCount: item.outfit_variants.length,
+          variantsCount: item.outfit_variants?.length || 0,
         };
       });
 

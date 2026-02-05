@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Star, Mail, Lock, Eye, EyeOff, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 
@@ -54,6 +54,14 @@ const Login = () => {
       </div>
 
       <div className="relative w-full max-w-md">
+        {/* Close Button */}
+        <button
+          onClick={() => navigate("/")}
+          className="absolute -top-12 -right-2 bg-white rounded-full p-2 shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 group z-10"
+          aria-label="Close login"
+        >
+          <X className="w-6 h-6 text-gray-600 group-hover:text-gray-800 transition-colors" />
+        </button>
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
           {/* Header */}

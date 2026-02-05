@@ -22,11 +22,12 @@ import {
   MapPin,
   CreditCard,
   LogOut,
+  ShoppingBagIcon,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../services/supabase";
 
-const CustomerDashboard = () => {
+const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState("grid");
   const [profile, setProfile] = useState(null);
@@ -81,7 +82,7 @@ const CustomerDashboard = () => {
     { icon: Package, label: "My Orders", route: "/customer/orders" },
     { icon: Heart, label: "Wishlist", route: "/customer/wishlist" },
     { icon: User, label: "Profile", route: "/customer/profile" },
-    { icon: MapPin, label: "Addresses", route: "/customer/addresses" },
+    { icon: ShoppingBag, label: "Cart", route: "/customer/cart" },
     { icon: CreditCard, label: "Payment Methods", route: "/customer/payments" },
     { icon: Bell, label: "Notifications", route: "/customer/notifications" },
     { icon: Settings, label: "Settings", route: "/customer/settings" },
@@ -396,7 +397,7 @@ const CustomerDashboard = () => {
 
                 {/* Notification Bell */}
                 <button
-                  onClick={() => navigate("/notifications")}
+                  onClick={() => navigate("/customer/notifications")}
                   className="relative p-2 rounded-lg hover:bg-gray-100"
                 >
                   <Bell className="w-6 h-6 text-gray-700" />
@@ -676,4 +677,4 @@ const CustomerDashboard = () => {
   );
 };
 
-export default CustomerDashboard;
+export default Dashboard;

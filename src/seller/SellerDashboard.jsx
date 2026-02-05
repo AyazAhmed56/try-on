@@ -31,8 +31,8 @@ const SellerDashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    // await supabase.auth.signOut();
-    navigate("/login", { replace: true });
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -90,41 +90,53 @@ const SellerDashboard = () => {
 
       /* ================= MY ITEMS (LIMITED) ================= */
 
-      const { data: outfits } = await supabase
+      const { data: outfits, error } = await supabase
         .from("outfits")
         .select(
           `
-        id,
-        name,
-        price,
-        stock,
-        outfit_images (
-          image_url,
-          is_main
-        ),
-        outfit_reviews (
-          rating
-        )
-      `,
+    id,
+    name,
+    price,
+    discount_price,
+    stock_quantity,
+    created_at,
+
+    outfit_images (
+      image_url,
+      is_main
+    ),
+
+    outfit_reviews (
+      rating
+    )
+  `,
         )
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false })
         .limit(6);
 
+      if (error) {
+        console.error("Error fetching seller items:", error);
+        setMyItems([]);
+        return;
+      }
+
       setMyItems(
         (outfits || []).map((o) => {
-          const ratings = o.outfit_reviews.map((r) => r.rating);
+          const ratings = o.outfit_reviews?.map((r) => r.rating) || [];
           const avgRating =
-            ratings.reduce((a, b) => a + b, 0) / (ratings.length || 1);
+            ratings.length > 0
+              ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+              : 0;
 
           return {
             id: o.id,
             name: o.name,
-            price: o.price,
-            stock: o.stock,
+            price: o.discount_price || o.price,
+            stock: o.stock_quantity,
             rating: avgRating,
             image:
-              o.outfit_images.find((i) => i.is_main)?.image_url ||
+              o.outfit_images?.find((i) => i.is_main)?.image_url ||
               "https://via.placeholder.com/400x500?text=No+Image",
           };
         }),
