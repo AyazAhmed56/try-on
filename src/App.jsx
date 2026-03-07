@@ -15,7 +15,6 @@ import SellerOrder from "./seller/SellerOrder";
 import UnifiedHomePage from "./pages/UnifiedHomePage";
 import SellerItemReviews from "./seller/SellerItemReviews";
 import OtherSellerReviewsAndItems from "./seller/OtherSellerReviewsAndItems";
-import TryOnPages from "./pages/TryOnPages";
 import ItemView from "./pages/ItemView";
 import CookiePolicy from "./components/CookiePolicy";
 import OrderReceipt from "./seller/OrderReceipt";
@@ -27,6 +26,8 @@ import MyOrders from "./customer/MyOrders";
 import Settings from "./customer/Settings";
 import Notifications from "./customer/Notifications";
 import ProductDetails from "./customer/ProductDetails";
+import AboutAndContact from "./pages/AboutAndContact";
+import TryOnPages from "./pages/TryOnPages";
 
 const App = () => {
   return (
@@ -44,7 +45,7 @@ const App = () => {
           <Route path="/customer/settings" element={<Settings />} />
           <Route path="/customer/notifications" element={<Notifications />} />
           <Route path="/customer/orders" element={<MyOrders />} />
-          <Route path="/tryon-info" element={<TryOnPages />} />
+          <Route path="/customer/try-on/:id" element={<TryOnPages />} />
 
           {/* seller */}
           <Route path="/seller/profile" element={<SellerProfile />} />
@@ -73,6 +74,7 @@ const App = () => {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/cookie" element={<CookiePolicy />} />
           <Route path="/" element={<UnifiedHomePage />} />
+          <Route path="/tryon-info" element={<AboutAndContact />} />
         </Routes>
       </BrowserRouter>
     </div>

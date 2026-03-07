@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import { ArrowLeft, Star, Package, Tag, Palette, Ruler } from "lucide-react";
 import BackButtonByRole from "./BackButtonByRole";
@@ -7,6 +7,7 @@ import BackButtonByRole from "./BackButtonByRole";
 const ItemView = () => {
   const { id } = useParams();
   const [item, setItem] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -255,15 +256,20 @@ const ItemView = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-4">
+              {/* Try On Button */}
+              <button
+                onClick={() => navigate(`/customer/try-on/${item.id}`)}
+                className="flex-1 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                Try Virtual Try-On
+              </button>
+
               <Link
                 to={`/post-item/${item.id}`}
                 className="flex-1 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-center"
               >
                 Edit Item
               </Link>
-              <button className="px-6 py-3 bg-red-100 text-red-700 font-semibold rounded-lg hover:bg-red-200 transition-colors">
-                Delete
-              </button>
             </div>
           </div>
         </div>

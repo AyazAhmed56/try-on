@@ -12,6 +12,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
     "@tailwindcss/vite": "^4.1.18",
+    "@tensorflow-models/body-pix": "^2.2.1",
+    "@tensorflow/tfjs": "^4.22.0",
+    "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
     "html2pdf.js-forked": "^0.0.2",
     "jspdf": "^4.1.0",
@@ -20,6 +23,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
+    "react-webcam": "^7.2.0",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
