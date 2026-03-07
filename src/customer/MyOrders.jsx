@@ -638,7 +638,7 @@ const MyOrders = () => {
                 : "Try adjusting your search or filters"}
             </p>
             <button
-              onClick={() => navigate("/products")}
+              onClick={() => navigate("/customer/products")}
               className="px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all"
             >
               Browse Products

@@ -718,7 +718,8 @@ const BrowseProducts = () => {
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden group"
+                    onClick={() => navigate(`/customer/products/${product.id}`)}
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden group cursor-pointer"
                   >
                     {/* Image */}
                     <div className="relative overflow-hidden h-64">
@@ -736,7 +737,10 @@ const BrowseProducts = () => {
 
                       {/* Wishlist Button */}
                       <button
-                        onClick={() => toggleWishlist(product.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(product.id);
+                        }}
                         className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-pink-500 hover:text-white transition-all z-10"
                       >
                         <Heart
@@ -760,14 +764,20 @@ const BrowseProducts = () => {
                       {/* Quick Actions Overlay */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                         <button
-                          onClick={() => navigate("/try-on")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/customer/try-on/${product.id}`);
+                          }}
                           className="p-3 rounded-full bg-white/90 backdrop-blur-sm hover:bg-purple-500 hover:text-white transition-all"
                           title="Try On"
                         >
                           <Camera className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => addToCart(product.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(product.id);
+                          }}
                           disabled={product.stock === 0}
                           className={`p-3 rounded-full bg-white/90 backdrop-blur-sm hover:bg-purple-500 hover:text-white transition-all ${
                             product.stock === 0
@@ -810,7 +820,10 @@ const BrowseProducts = () => {
                           ${product.price.toFixed(2)}
                         </span>
                         <button
-                          onClick={() => addToCart(product.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(product.id);
+                          }}
                           disabled={product.stock === 0}
                           className={`px-4 py-2 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all ${
                             product.stock === 0
@@ -830,7 +843,8 @@ const BrowseProducts = () => {
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6"
+                    onClick={() => navigate(`/customer/products/${product.id}`)}
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden group cursor-pointer"
                   >
                     {/* Image */}
                     <div className="shrink-0 w-full sm:w-32">
@@ -890,7 +904,10 @@ const BrowseProducts = () => {
                       </span>
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => toggleWishlist(product.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWishlist(product.id);
+                          }}
                           className="p-2 rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-600 hover:text-white transition-all"
                           title="Wishlist"
                         >
@@ -903,14 +920,20 @@ const BrowseProducts = () => {
                           />
                         </button>
                         <button
-                          onClick={() => navigate("/try-on")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/customer/try-on/${product.id}`);
+                          }}
                           className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all"
                           title="Try On"
                         >
                           <Camera className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => addToCart(product.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(product.id);
+                          }}
                           disabled={product.stock === 0}
                           className={`p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all ${
                             product.stock === 0

@@ -37,7 +37,7 @@ const Cart = () => {
       }
 
       const { data, error } = await supabase
-        .from("carts")
+        .from("cart")
         .select(
           `
           id,
@@ -102,7 +102,7 @@ const Cart = () => {
     if (newQuantity < 1) return;
 
     const { error } = await supabase
-      .from("carts")
+      .from("cart")
       .update({ quantity: newQuantity })
       .eq("id", cartId);
 
@@ -116,7 +116,7 @@ const Cart = () => {
   };
 
   const removeFromCart = async (cartId) => {
-    const { error } = await supabase.from("carts").delete().eq("id", cartId);
+    const { error } = await supabase.from("cart").delete().eq("id", cartId);
 
     if (!error) {
       setCartItems((prev) => prev.filter((item) => item.cartId !== cartId));
@@ -205,7 +205,7 @@ const Cart = () => {
               Add items to your cart to get started!
             </p>
             <Link
-              to="/customer/all-items"
+              to="/customer/products"
               className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -409,7 +409,7 @@ const Cart = () => {
                 </button>
 
                 <Link
-                  to="/customer/all-items"
+                  to="/customer/products"
                   className="block w-full py-3 text-center bg-purple-100 text-purple-700 font-semibold rounded-lg hover:bg-purple-200 transition-colors"
                 >
                   Continue Shopping

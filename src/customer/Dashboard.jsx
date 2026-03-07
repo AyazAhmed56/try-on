@@ -521,7 +521,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => navigate("/orders")}
+                      onClick={() => navigate("/customer/orders")}
                       className="w-full py-2 rounded-xl bg-linear-to-r from-purple-50 to-pink-50 text-purple-700 font-semibold hover:from-purple-100 hover:to-pink-100 transition-all"
                     >
                       Track Order

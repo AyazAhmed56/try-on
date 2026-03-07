@@ -19,42 +19,37 @@ import TryOnPages from "./pages/TryOnPages";
 import ItemView from "./pages/ItemView";
 import CookiePolicy from "./components/CookiePolicy";
 import OrderReceipt from "./seller/OrderReceipt";
-// import CustomerAllItems from "./customer/CustomerAllItems";
 import BrowseProducts from "./customer/BrowseProducts";
 import Wishlist from "./customer/Wishlist";
 import Dashboard from "./customer/Dashboard";
 import Cart from "./customer/Cart";
-// import CustomerReviews from "./customer/CustomerReviews";
-// import CustomerOffers from "./customer/CustomerOffers";
-// import InvoiceDownload from "./components/InvoiceDownload";
-// import CustomerSupport from "./components/CustomerSupport";
-// import ProductRating from "./components/ProductRating";
-// import FestivalOfferPage from "./pages/FestivalOfferPage";
-// import DiscountSalesPage from "./pages/DiscountSalesPage";
 import MyOrders from "./customer/MyOrders";
 import Settings from "./customer/Settings";
 import Notifications from "./customer/Notifications";
+import ProductDetails from "./customer/ProductDetails";
 
 const App = () => {
   return (
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<UnifiedHomePage />} />
-          {/* <Route path="/customer/home" element={<CustomerDashboard />} /> */}
+          {/* customer */}
           <Route path="/customer/dashboard" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/role" element={<Role />} />
           <Route path="/customer/profile" element={<CustomerProfile />} />
+          <Route path="/customer/item/:id" element={<ItemView />} />
+          <Route path="/customer/wishlist" element={<Wishlist />} />
+          <Route path="/customer/products" element={<BrowseProducts />} />
+          <Route path="/customer/products/:id" element={<ProductDetails />} />
+          <Route path="/customer/cart" element={<Cart />} />
+          <Route path="/customer/settings" element={<Settings />} />
+          <Route path="/customer/notifications" element={<Notifications />} />
+          <Route path="/customer/orders" element={<MyOrders />} />
+          <Route path="/tryon-info" element={<TryOnPages />} />
+
+          {/* seller */}
           <Route path="/seller/profile" element={<SellerProfile />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/cookie" element={<CookiePolicy />} />
           <Route path="/seller/items" element={<SellerItem />} />
           <Route path="/seller/items/:id" element={<ItemView />} />
-          <Route path="/customer/item/:id" element={<ItemView />} />
           <Route path="/post-item/:id" element={<AdvancedPostItem />} />
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
           <Route path="/post-item" element={<AdvancedPostItem />} />
@@ -66,21 +61,18 @@ const App = () => {
             element={<OtherSellerReviewsAndItems />}
           />
           <Route path="/order-receipt" element={<OrderReceipt />} />
-          <Route path="/customer/wishlist" element={<Wishlist />} />
-          <Route path="/customer/products" element={<BrowseProducts />} />
-          <Route path="/customer/cart" element={<Cart />} />
-          <Route path="/customer/settings" element={<Settings />} />
-          <Route path="/customer/notifications" element={<Notifications />} />
-          {/*<Route path="/customer/all-items" element={<CustomerAllItems />} />   */}
-          <Route path="/customer/orders" element={<MyOrders />} />
-          <Route path="/tryon-info" element={<TryOnPages />} />
-          {/* <Route path="/customer/reviews" element={<CustomerReviews />} />
-          <Route path="/customer/offers" element={<CustomerOffers />} /> */}
-          {/* <Route path="/invoice" element={<InvoiceDownload />} /> */}
-          {/* <Route path="/need-help" element={<CustomerSupport />} /> */}
-          {/* <Route path="/rate-products" element={<ProductRating />} /> */}
-          {/* <Route path="/festival" element={<FestivalOfferPage />} /> */}
-          {/* <Route path="/discount" element={<DiscountSalesPage />} /> */}
+
+          {/* admin */}
+
+          {/* other */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/role" element={<Role />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/cookie" element={<CookiePolicy />} />
+          <Route path="/" element={<UnifiedHomePage />} />
         </Routes>
       </BrowserRouter>
     </div>

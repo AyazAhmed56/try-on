@@ -284,7 +284,8 @@ const OtherSellerReviewsAndItems = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {seller.items.map((item) => (
-                      <div
+                      <Link
+                        to={`/customer/product/${item.id}`}
                         key={item.id}
                         className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                       >
@@ -309,7 +310,7 @@ const OtherSellerReviewsAndItems = () => {
                             {item.reviews} reviews
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>

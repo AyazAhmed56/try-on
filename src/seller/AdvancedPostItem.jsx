@@ -935,7 +935,7 @@ const AdvancedPostItem = () => {
                 Post Item
               </button>
               <Link
-                to="/seller-dashboard"
+                to="/seller/dashboard"
                 className="px-8 py-4 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Cancel

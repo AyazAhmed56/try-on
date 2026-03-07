@@ -280,7 +280,8 @@ const Settings = () => {
   };
 
   const handleDeleteAddress = async (addressId) => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+    if (!window.confirm("Are you sure you want to delete this address?"))
+      return;
 
     try {
       const { error } = await supabase
@@ -409,7 +410,7 @@ const Settings = () => {
 
   const handleDeleteAccount = async () => {
     if (
-      !confirm(
+      !window.confirm(
         "Are you sure you want to delete your account? This action cannot be undone!",
       )
     )
