@@ -6,20 +6,22 @@ const DownloadPreview = () => {
 
     const link = document.createElement("a");
 
-    link.download = "try-on.png";
+    link.download = "virtual-try-on.png";
 
-    link.href = canvas.toDataURL();
+    link.href = canvas.toDataURL("image/png", 1.0);
 
     link.click();
   };
 
   return (
-    <button
-      onClick={downloadImage}
-      className="mt-4 bg-black text-white px-6 py-2 rounded"
-    >
-      Download Result
-    </button>
+    <div className="text-center mt-4">
+      <button
+        onClick={downloadImage}
+        className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
+      >
+        Download Result
+      </button>
+    </div>
   );
 };
 

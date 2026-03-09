@@ -96,7 +96,7 @@ const AdvancedPostItem = () => {
       setDescription(data.description);
       setPrice(data.price);
       setDiscountPrice(data.discount_price);
-      setStocks(data.stock);
+      setStocks(data.stock_quantity);
       setMaterial(data.material);
       setCareInstructions(data.care_instructions);
 
@@ -121,7 +121,6 @@ const AdvancedPostItem = () => {
     }
 
     try {
-      // ✅ BASIC VALIDATION
       if (
         !productName ||
         !selectedCategory ||
@@ -134,41 +133,38 @@ const AdvancedPostItem = () => {
         return;
       }
 
-      let outfitId = id; // id comes from useParams (edit mode)
+      let outfitId = id;
 
-      /* --------------------------------------------------
-       1️⃣ CREATE OR UPDATE OUTFIT
-    -------------------------------------------------- */
+      /* -------------------------------
+    CREATE OR UPDATE OUTFIT
+    --------------------------------*/
 
       if (isEdit) {
-        // 🔁 UPDATE
-        const { error: updateError } = await supabase
+        const { error } = await supabase
           .from("outfits")
           .update({
             name: productName,
             brand: brandName,
             category: selectedCategory,
             subcategory: selectedSubcategory,
-            description,
+            description: description,
             price: Number(price),
             discount_price: discountPrice ? Number(discountPrice) : null,
-            stock: Number(stocks),
-            material,
+            stock_quantity: Number(stocks), // ✅ FIXED
+            material: material,
             care_instructions: careInstructions,
           })
           .eq("id", outfitId);
 
-        if (updateError) throw updateError;
+        if (error) throw error;
 
-        // ❌ REMOVE OLD VARIANTS & IMAGES
         await supabase
           .from("outfit_variants")
           .delete()
           .eq("outfit_id", outfitId);
         await supabase.from("outfit_images").delete().eq("outfit_id", outfitId);
       } else {
-        // ➕ INSERT
-        const { data: newOutfit, error: insertError } = await supabase
+        const { data, error } = await supabase
           .from("outfits")
           .insert([
             {
@@ -177,51 +173,51 @@ const AdvancedPostItem = () => {
               brand: brandName,
               category: selectedCategory,
               subcategory: selectedSubcategory,
-              description,
+              description: description,
               price: Number(price),
               discount_price: discountPrice ? Number(discountPrice) : null,
-              stock: Number(stocks),
-              material,
+              stock_quantity: Number(stocks), // ✅ FIXED HERE
+              material: material,
               care_instructions: careInstructions,
             },
           ])
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        if (error) throw error;
 
-        outfitId = newOutfit.id;
+        outfitId = data.id;
       }
 
-      /* --------------------------------------------------
-       2️⃣ INSERT VARIANTS (SIZE × COLOR)
-    -------------------------------------------------- */
+      /* -------------------------------
+    INSERT VARIANTS
+    --------------------------------*/
 
       if (selectedSizes.length && selectedColors.length) {
-        const variantsPayload = [];
+        const variants = [];
 
         selectedSizes.forEach((size) => {
           selectedColors.forEach((color) => {
-            variantsPayload.push({
+            variants.push({
               outfit_id: outfitId,
-              size,
-              color,
+              size: size,
+              color: color,
             });
           });
         });
 
-        const { error: variantError } = await supabase
+        const { error } = await supabase
           .from("outfit_variants")
-          .insert(variantsPayload);
+          .insert(variants);
 
-        if (variantError) throw variantError;
+        if (error) throw error;
       }
 
-      /* --------------------------------------------------
-       3️⃣ INSERT IMAGES
-    -------------------------------------------------- */
+      /* -------------------------------
+    INSERT IMAGES
+    --------------------------------*/
 
-      const imagesPayload = [
+      const images = [
         {
           outfit_id: outfitId,
           image_url: mainImage,
@@ -236,17 +232,14 @@ const AdvancedPostItem = () => {
 
       const { error: imageError } = await supabase
         .from("outfit_images")
-        .insert(imagesPayload);
+        .insert(images);
 
       if (imageError) throw imageError;
-
-      /* --------------------------------------------------
-       4️⃣ SUCCESS → REDIRECT
-    -------------------------------------------------- */
 
       alert(
         isEdit ? "Item updated successfully!" : "Item posted successfully!",
       );
+
       navigate("/seller/dashboard");
     } catch (error) {
       console.error("Post item error:", error);

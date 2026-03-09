@@ -1,22 +1,58 @@
 import React, { useState } from "react";
-import UserImageUpload from "./UserImageUpload";
 import TryOnCanvas from "./TryOnCanvas";
-import DownloadPreview from "./DownloadPreview";
 
 const TryOnRoom = ({ outfitImage }) => {
   const [userImage, setUserImage] = useState(null);
+  const [size, setSize] = useState("M");
+
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setUserImage(url);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold mb-6">Virtual Try-On Room</h1>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Virtual Try-On Room</h1>
 
-      <UserImageUpload setUserImage={setUserImage} />
+      {/* Upload */}
+      <input type="file" accept="image/*" onChange={handleUpload} />
 
+      {/* Size */}
       {userImage && (
-        <TryOnCanvas userImage={userImage} outfitImage={outfitImage} />
+        <div className="mt-3">
+          <label>Select Size: </label>
+
+          <select
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+            className="border ml-2 p-1"
+          >
+            <option value="S">Small</option>
+            <option value="M">Medium</option>
+            <option value="L">Large</option>
+            <option value="XL">XL</option>
+          </select>
+
+          <button
+            onClick={() => setUserImage(null)}
+            className="ml-3 px-3 py-1 bg-gray-200"
+          >
+            Upload New Photo
+          </button>
+        </div>
       )}
 
-      {userImage && <DownloadPreview />}
+      {/* Canvas */}
+      {userImage && (
+        <TryOnCanvas
+          userImage={userImage}
+          outfitImage={outfitImage}
+          size={size}
+        />
+      )}
     </div>
   );
 };

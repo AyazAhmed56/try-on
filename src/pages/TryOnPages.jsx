@@ -5,38 +5,36 @@ import TryOnRoom from "../components/tryon/TryOnRoom";
 
 const TryOnPages = () => {
   const { id } = useParams();
-  const [outfit, setOutfit] = useState(null);
+  const [outfitImage, setOutfitImage] = useState(null);
 
   useEffect(() => {
-    const fetchOutfit = async () => {
+    const loadOutfit = async () => {
       const { data, error } = await supabase
         .from("outfits")
-        .select(
-          `
-          *,
-          outfit_images(*)
-        `,
-        )
+        .select(`*, outfit_images(*)`)
         .eq("id", id)
         .single();
 
-      if (!error) setOutfit(data);
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const mainImage =
+        data.outfit_images.find((i) => i.is_main)?.image_url ||
+        data.outfit_images[0]?.image_url;
+
+      setOutfitImage(mainImage);
     };
 
-    fetchOutfit();
+    loadOutfit();
   }, [id]);
 
-  if (!outfit) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading Try-On Room...
-      </div>
-    );
+  if (!outfitImage) {
+    return <div className="p-10">Loading Try-On...</div>;
   }
 
-  const mainImage = outfit.outfit_images.find((i) => i.is_main)?.image_url;
-
-  return <TryOnRoom outfitImage={mainImage} />;
+  return <TryOnRoom outfitImage={outfitImage} />;
 };
 
 export default TryOnPages;
