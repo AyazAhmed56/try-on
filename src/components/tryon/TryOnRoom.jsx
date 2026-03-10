@@ -25,7 +25,7 @@ const TryOnRoom = () => {
   }, [userImage, selectedOutfit]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-purple-50 to-pink-50">
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -38,7 +38,7 @@ const TryOnRoom = () => {
                 ←
               </button>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center space-x-2">
+                <h1 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center space-x-2">
                   <span className="text-4xl">✨</span>
                   <span>Virtual Try-On</span>
                 </h1>
@@ -53,10 +53,10 @@ const TryOnRoom = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info Banner */}
-        <div className="bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-200 rounded-2xl p-6 mb-8">
+        <div className="bg-linear-to-r from-purple-100 to-pink-100 border-2 border-purple-200 rounded-2xl p-6 mb-8">
           <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl">
+            <div className="shrink-0">
+              <div className="w-12 h-12 rounded-full bg-linear-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl">
                 💡
               </div>
             </div>
@@ -66,7 +66,7 @@ const TryOnRoom = () => {
               </h3>
               <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start space-x-2">
-                  <span className="text-purple-600 font-bold flex-shrink-0 mt-0.5">
+                  <span className="text-purple-600 font-bold shrink-0 mt-0.5">
                     ✓
                   </span>
                   <span>
@@ -74,13 +74,13 @@ const TryOnRoom = () => {
                   </span>
                 </li>
                 <li className="flex items-start space-x-2">
-                  <span className="text-purple-600 font-bold flex-shrink-0 mt-0.5">
+                  <span className="text-purple-600 font-bold shrink-0 mt-0.5">
                     ✓
                   </span>
                   <span>Upload a clear, full-body photo of yourself</span>
                 </li>
                 <li className="flex items-start space-x-2">
-                  <span className="text-purple-600 font-bold flex-shrink-0 mt-0.5">
+                  <span className="text-purple-600 font-bold shrink-0 mt-0.5">
                     ✓
                   </span>
                   <span>
@@ -97,7 +97,7 @@ const TryOnRoom = () => {
           {productImage && (
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl">
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl">
                   👔
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">
@@ -105,7 +105,7 @@ const TryOnRoom = () => {
                 </h3>
               </div>
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <div className="relative bg-gray-50 rounded-2xl overflow-hidden border-2 border-purple-200">
                   <img
                     src={productImage}
@@ -115,7 +115,7 @@ const TryOnRoom = () => {
                   />
                 </div>
               </div>
-              <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+              <div className="mt-4 p-4 bg-linear-to-r from-purple-50 to-pink-50 rounded-xl">
                 <div className="flex items-center space-x-2 text-purple-700">
                   <span className="font-bold text-lg">✓</span>
                   <span className="font-semibold">Outfit ready for try-on</span>
@@ -127,7 +127,7 @@ const TryOnRoom = () => {
           {/* Upload Photo Section */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl">
                 📤
               </div>
               <h3 className="text-xl font-bold text-gray-900">
@@ -142,7 +142,7 @@ const TryOnRoom = () => {
             {!userImage && (
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                 <div className="flex items-start space-x-3">
-                  <span className="text-xl flex-shrink-0 mt-0.5">💡</span>
+                  <span className="text-xl shrink-0 mt-0.5">💡</span>
                   <div>
                     <p className="text-sm font-semibold text-blue-900 mb-2">
                       Tips for best results:
@@ -164,13 +164,13 @@ const TryOnRoom = () => {
         {userImage && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fadeIn">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-emerald-500 flex items-center justify-center text-xl">
                 ✓
               </div>
               <h3 className="text-xl font-bold text-gray-900">Your Photo</h3>
             </div>
             <div className="relative group max-w-md mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
               <div className="relative bg-gray-50 rounded-2xl overflow-hidden border-2 border-purple-200">
                 <img
                   src={userImage}
@@ -180,7 +180,7 @@ const TryOnRoom = () => {
                 />
               </div>
             </div>
-            <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl max-w-md mx-auto">
+            <div className="mt-4 p-4 bg-linear-to-r from-green-50 to-emerald-50 rounded-xl max-w-md mx-auto">
               <div className="flex items-center space-x-2 text-green-700">
                 <span className="font-bold text-lg">✓</span>
                 <span className="font-semibold">
@@ -195,17 +195,17 @@ const TryOnRoom = () => {
         {userImage && selectedOutfit && (
           <div className="bg-white rounded-2xl shadow-lg p-6 animate-fadeIn">
             <div className="flex items-center justify-center space-x-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl">
+              <div className="w-12 h-12 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl">
                 ✨
               </div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h3 className="text-2xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Your Virtual Try-On Result
               </h3>
             </div>
 
             {/* Processing Indicator - Only show while processing */}
             {isProcessing && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+              <div className="mb-6 p-4 bg-linear-to-r from-purple-50 to-pink-50 rounded-xl">
                 <div className="flex items-center justify-center space-x-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
                   <span className="text-purple-700 font-semibold">
@@ -217,7 +217,7 @@ const TryOnRoom = () => {
 
             {/* Canvas Component */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur-xl opacity-20"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl blur-xl opacity-20"></div>
               <div className="relative">
                 <TryOnCanvas
                   userImage={userImage}
@@ -237,7 +237,7 @@ const TryOnRoom = () => {
               </button>
               <button
                 onClick={() => navigate("/products")}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2"
+                className="px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2"
               >
                 <span className="text-xl">👔</span>
                 <span>Try Different Outfit</span>
@@ -249,7 +249,7 @@ const TryOnRoom = () => {
         {/* No Outfit Selected Warning */}
         {!productImage && (
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4 text-3xl">
+            <div className="w-16 h-16 rounded-full bg-linear-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4 text-3xl">
               ⚠️
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -260,7 +260,7 @@ const TryOnRoom = () => {
             </p>
             <button
               onClick={() => navigate("/products")}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all inline-flex items-center space-x-2"
+              className="px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all inline-flex items-center space-x-2"
             >
               <span className="text-xl">👔</span>
               <span>Browse Outfits</span>

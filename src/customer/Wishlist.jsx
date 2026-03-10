@@ -23,7 +23,7 @@ const Wishlist = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [sortBy, setSortBy] = useState("newest");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,9 @@ const Wishlist = () => {
 
     // Price range filter
     filtered = filtered.filter(
-      (item) => item.price >= priceRange.min && item.price <= priceRange.max,
+      (item) =>
+        item.price >= (priceRange.min || 0) &&
+        item.price <= (priceRange.max || Infinity),
     );
 
     // Sorting
@@ -135,7 +137,7 @@ const Wishlist = () => {
     id,
     created_at,
 
-    outfits:outfit_id (
+outfits(
       id,
       name,
       price,
@@ -161,22 +163,21 @@ const Wishlist = () => {
       }
 
       if (data) {
-        const formattedItems = data
-          .filter((item) => item.outfits) // Filter out null outfits
-          .map((item) => ({
-            wishlistId: item.id,
-            id: item.outfits.id,
-            name: item.outfits.name || "Unnamed Item",
-            price: parseFloat(item.outfits.price) || 0,
-            category: item.outfits.category || "Uncategorized",
-            description: item.outfits.description || "",
-            image:
-              item.outfits.outfit_images?.find((img) => img.is_main)
-                ?.image_url || null,
-            addedDate: item.created_at,
-            rating: 4.5,
-            inStock: true,
-          }));
+        const formattedItems = data.map((item) => ({
+          wishlistId: item.id,
+          id: item.outfit_id,
+          name: item.outfits?.name || "Unnamed Item",
+          price: parseFloat(item.outfits?.price) || 0,
+          category: item.outfits?.category || "Uncategorized",
+          description: item.outfits?.description || "",
+          image:
+            item.outfits?.outfit_images?.find((img) => img.is_main)
+              ?.image_url || null,
+          addedDate: item.created_at,
+          rating: 4.5,
+          inStock: true,
+        }));
+        console.log("Wishlist Data:", data);
 
         setWishlistItems(formattedItems);
         setFilteredItems(formattedItems);
@@ -611,7 +612,16 @@ const Wishlist = () => {
                   {/* Quick Actions Overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                     <button
-                      onClick={() => navigate("/customer/try-on")}
+                      onClick={() =>
+                        navigate(`/customer/try-on/${item.id}`, {
+                          state: {
+                            outfit: item.name.toLowerCase().includes("black")
+                              ? "black"
+                              : "white",
+                            productImage: item.image,
+                          },
+                        })
+                      }
                       className="p-3 rounded-full bg-white/90 backdrop-blur-sm hover:bg-purple-500 hover:text-white transition-all"
                       title="Try On"
                     >
@@ -726,7 +736,16 @@ const Wishlist = () => {
                   </span>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => navigate("/customer/try-on")}
+                      onClick={() =>
+                        navigate(`/customer/try-on/${item.id}`, {
+                          state: {
+                            outfit: item.name.toLowerCase().includes("black")
+                              ? "black"
+                              : "white",
+                            productImage: item.image,
+                          },
+                        })
+                      }
                       className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all"
                       title="Try On"
                     >
