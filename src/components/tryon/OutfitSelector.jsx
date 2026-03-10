@@ -1,26 +1,24 @@
 import React from "react";
 
-const OutfitSelector = ({ setOutfitImage }) => {
-  const outfits = [
-    "/outfits/jacket.png",
-    "/outfits/shirt.png",
-    "/outfits/dress.png",
-  ];
-
+const OutfitSelector = ({ setSelectedOutfit }) => {
   return (
-    <div>
-      <p className="font-semibold mb-2">Select Outfit</p>
+    <div className="outfit-selector">
+      <h2>Select Outfit</h2>
 
-      <div className="flex gap-4">
-        {outfits.map((img, index) => (
-          <img
-            key={index}
-            src={img}
-            alt="outfit"
-            className="w-24 cursor-pointer border"
-            onClick={() => setOutfitImage(img)}
-          />
-        ))}
+      <div style={{ display: "flex", gap: "20px" }}>
+        <img
+          src="/products/black-tshirt.png"
+          width="120"
+          onClick={() => setSelectedOutfit("black")}
+          style={{ cursor: "pointer" }}
+        />
+
+        <img
+          src="/products/white-tshirt.png"
+          width="120"
+          onClick={() => setSelectedOutfit("white")}
+          style={{ cursor: "pointer" }}
+        />
       </div>
     </div>
   );

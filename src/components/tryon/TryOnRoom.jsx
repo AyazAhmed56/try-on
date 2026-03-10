@@ -1,58 +1,77 @@
+// import React, { useState } from "react";
+// import TryOnCanvas from "./TryOnCanvas";
+
+// const TryOnRoom = ({ outfitImage }) => {
+//   const [userImage, setUserImage] = useState(null);
+//   const [size, setSize] = useState("M");
+
+//   const handleUpload = (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     const url = URL.createObjectURL(file);
+//     setUserImage(url);
+//   };
+
+//   return (
+//     <div style={{ padding: "20px" }}>
+//       <h2>Virtual Try-On Room</h2>
+
+//       <input type="file" accept="image/*" onChange={handleUpload} />
+
+//       {userImage && (
+//         <>
+//           <div style={{ marginTop: "10px" }}>
+//             <label>Select Size: </label>
+
+//             <select value={size} onChange={(e) => setSize(e.target.value)}>
+//               <option value="S">Small</option>
+//               <option value="M">Medium</option>
+//               <option value="L">Large</option>
+//               <option value="XL">XL</option>
+//             </select>
+
+//             <button
+//               style={{ marginLeft: "10px" }}
+//               onClick={() => setUserImage(null)}
+//             >
+//               Upload New Photo
+//             </button>
+//           </div>
+
+//           <TryOnCanvas
+//             userImage={userImage}
+//             outfitImage={outfitImage}
+//             size={size}
+//           />
+//         </>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default TryOnRoom;
+
 import React, { useState } from "react";
+import UserImageUpload from "./UserImageUpload";
+import OutfitSelector from "./OutfitSelector";
 import TryOnCanvas from "./TryOnCanvas";
 
-const TryOnRoom = ({ outfitImage }) => {
+const TryOnRoom = () => {
   const [userImage, setUserImage] = useState(null);
-  const [size, setSize] = useState("M");
-
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-    setUserImage(url);
-  };
+  const [selectedOutfit, setSelectedOutfit] = useState(null);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Virtual Try-On Room</h1>
+    <div>
+      <h1>Virtual Try On</h1>
 
-      {/* Upload */}
-      <input type="file" accept="image/*" onChange={handleUpload} />
+      <UserImageUpload setUserImage={setUserImage} />
 
-      {/* Size */}
-      {userImage && (
-        <div className="mt-3">
-          <label>Select Size: </label>
+      {userImage && <img src={userImage} width="300" />}
 
-          <select
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-            className="border ml-2 p-1"
-          >
-            <option value="S">Small</option>
-            <option value="M">Medium</option>
-            <option value="L">Large</option>
-            <option value="XL">XL</option>
-          </select>
+      <OutfitSelector setSelectedOutfit={setSelectedOutfit} />
 
-          <button
-            onClick={() => setUserImage(null)}
-            className="ml-3 px-3 py-1 bg-gray-200"
-          >
-            Upload New Photo
-          </button>
-        </div>
-      )}
-
-      {/* Canvas */}
-      {userImage && (
-        <TryOnCanvas
-          userImage={userImage}
-          outfitImage={outfitImage}
-          size={size}
-        />
-      )}
+      {selectedOutfit && <TryOnCanvas selectedOutfit={selectedOutfit} />}
     </div>
   );
 };
