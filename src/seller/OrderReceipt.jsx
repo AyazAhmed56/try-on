@@ -140,7 +140,7 @@ const OrderReceipt = () => {
             try again.
           </p>
           <Link
-            to="/customer/orders"
+            to="/seller/orders"
             className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200"
           >
             <ArrowLeft className="w-4 h-4" />

@@ -15,6 +15,7 @@ import {
   Star,
   MessageSquare,
   Receipt,
+  Contact,
 } from "lucide-react";
 import { supabase } from "../services/supabase";
 
@@ -172,6 +173,12 @@ const SellerDashboard = () => {
       label: "Dashboard",
       icon: Home,
       path: "/seller/dashboard",
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: Contact,
+      path: "/seller/profile",
     },
     { id: "post-item", label: "Post Item", icon: Plus, path: "/post-item" },
     { id: "my-items", label: "My Items", icon: Grid3x3, path: "/my-items" },

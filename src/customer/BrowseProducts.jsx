@@ -766,7 +766,16 @@ const BrowseProducts = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/customer/try-on/${product.id}`);
+                            navigate(`/customer/try-on/${product.id}`, {
+                              state: {
+                                outfit: product.name
+                                  .toLowerCase()
+                                  .includes("black")
+                                  ? "black"
+                                  : "white",
+                                productImage: product.image,
+                              },
+                            });
                           }}
                           className="p-3 rounded-full bg-white/90 backdrop-blur-sm hover:bg-purple-500 hover:text-white transition-all"
                           title="Try On"
@@ -922,7 +931,16 @@ const BrowseProducts = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/customer/try-on/${product.id}`);
+                            navigate(`/customer/try-on/${product.id}`, {
+                              state: {
+                                outfit: product.name
+                                  .toLowerCase()
+                                  .includes("black")
+                                  ? "black"
+                                  : "white",
+                                productImage: product.image,
+                              },
+                            });
                           }}
                           className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all"
                           title="Try On"
