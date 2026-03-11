@@ -23,6 +23,7 @@ import {
   CreditCard,
   LogOut,
   ShoppingBagIcon,
+  ShoppingCart,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../services/supabase";
@@ -44,7 +45,7 @@ const Dashboard = () => {
       icon: Camera,
       label: "Virtual Try-On",
       color: "from-purple-600 to-pink-600",
-      route: "/customer/try-on",
+      route: "/customer/products",
     },
     {
       icon: ShoppingBag,
@@ -105,18 +106,29 @@ const Dashboard = () => {
   };
 
   const fetchStats = async (userId) => {
-    const [{ count: orderCount }, { count: wishlistCount }] = await Promise.all(
-      [
-        supabase
-          .from("orders")
-          .select("*", { count: "exact", head: true })
-          .eq("customer_id", userId),
-        supabase
-          .from("wishlist")
-          .select("*", { count: "exact", head: true })
-          .eq("customer_id", userId),
-      ],
-    );
+    const [
+      { count: orderCount },
+      { count: wishlistCount },
+      { count: productCount },
+      { count: cartCount },
+    ] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("customer_id", userId),
+
+      supabase
+        .from("wishlist")
+        .select("*", { count: "exact", head: true })
+        .eq("customer_id", userId),
+
+      supabase.from("outfits").select("*", { count: "exact", head: true }),
+
+      supabase
+        .from("cart")
+        .select("*", { count: "exact", head: true })
+        .eq("customer_id", userId),
+    ]);
 
     setStats([
       {
@@ -131,8 +143,18 @@ const Dashboard = () => {
         icon: Heart,
         color: "pink",
       },
-      { label: "Try-Ons Used", value: "—", icon: Camera, color: "purple" },
-      { label: "Saved Amount", value: "—", icon: TrendingUp, color: "pink" },
+      {
+        label: "Total Products",
+        value: productCount || 0,
+        icon: ShoppingBag,
+        color: "purple",
+      },
+      {
+        label: "Cart Items",
+        value: cartCount || 0,
+        icon: ShoppingCart,
+        color: "pink",
+      },
     ]);
   };
 
@@ -567,19 +589,27 @@ const Dashboard = () => {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              className={
+                activeView === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                  : "flex flex-col gap-4"
+              }
+            >
               {trendingProducts.length > 0 ? (
                 trendingProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all group overflow-hidden"
+                    onClick={() => navigate(`/customer/products/${product.id}`)}
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all group overflow-hidden cursor-pointer"
                   >
-                    <div className="relative overflow-hidden">
+                    <div className="relative overflow-hidden h-64 flex items-center justify-center bg-gray-50">
+                      
                       {product.image && (
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-contain bg-gray-50 group-hover:scale-105 transition-transform duration-500"
                         />
                       )}
                       <button className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-pink-500 hover:text-white transition-all">
@@ -588,7 +618,10 @@ const Dashboard = () => {
                       {product.tryOn && (
                         <div className="absolute bottom-4 left-4 right-4">
                           <button
-                            onClick={() => navigate("/try-on")}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/customer/try-on/${product.id}`);
+                            }}
                             className="w-full py-2 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center justify-center space-x-2"
                           >
                             <Camera className="w-4 h-4" />
@@ -641,7 +674,8 @@ const Dashboard = () => {
                 wishlistItems.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all group"
+                    onClick={() => navigate(`/customer/products/${item.id}`)}
+                    className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all group cursor-pointer"
                   >
                     <div className="relative mb-3">
                       {item.image && (
