@@ -432,12 +432,10 @@ const BrowseProducts = () => {
 
   const ProductStats = () => {
     const totalProducts = products.length;
-    const avgPrice =
-      products.length > 0
-        ? products.reduce((sum, p) => sum + p.price, 0) / products.length
-        : 0;
-    const inStock = products.filter((p) => p.stock > 0).length;
-
+    const totalPrice =
+      products.length > 0 ? products.reduce((sum, p) => sum + p.price, 0) : 0;
+    const inStock =
+      products.length > 0 ? products.reduce((sum, p) => sum + p.stock, 0) : 0;
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
@@ -453,10 +451,10 @@ const BrowseProducts = () => {
           <div className="flex items-center justify-between mb-2">
             <TrendingUp className="w-8 h-8 text-pink-500" />
             <span className="text-3xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              ${avgPrice.toFixed(2)}
+              ${totalPrice.toFixed(2)}
             </span>
           </div>
-          <p className="text-sm text-gray-600">Average Price</p>
+          <p className="text-sm text-gray-600">Total Price</p>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
           <div className="flex items-center justify-between mb-2">
@@ -853,10 +851,10 @@ const BrowseProducts = () => {
                   <div
                     key={product.id}
                     onClick={() => navigate(`/customer/products/${product.id}`)}
-                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden group cursor-pointer"
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden group cursor-pointer flex flex-col sm:flex-row items-center gap-4 p-4"
                   >
                     {/* Image */}
-                    <div className="shrink-0 w-full sm:w-32">
+                    <div className="shrink-0 w-full sm:w-32 flex justify-center">
                       {product.image ? (
                         <img
                           src={product.image}
@@ -871,7 +869,7 @@ const BrowseProducts = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 px-2">
                       <div className="mb-2 flex items-center space-x-2">
                         <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
                           {product.category}
@@ -907,7 +905,7 @@ const BrowseProducts = () => {
                     </div>
 
                     {/* Price and Actions */}
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto space-y-0 sm:space-y-3">
+                    <div className="flex flex-col items-end justify-between gap-3 w-full sm:w-auto">
                       <span className="text-2xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                         ${product.price.toFixed(2)}
                       </span>
