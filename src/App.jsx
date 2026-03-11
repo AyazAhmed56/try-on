@@ -28,6 +28,7 @@ import Notifications from "./customer/Notifications";
 import ProductDetails from "./customer/ProductDetails";
 import AboutAndContact from "./pages/AboutAndContact";
 import TryOnPages from "./pages/TryOnPages";
+import VirtualTryOn from "./customer/VirtualTryOn";
 
 const App = () => {
   return (
@@ -46,6 +47,7 @@ const App = () => {
           <Route path="/customer/notifications" element={<Notifications />} />
           <Route path="/customer/orders" element={<MyOrders />} />
           <Route path="/customer/try-on/:id" element={<TryOnPages />} />
+          <Route path="/customer/try-on" element={<VirtualTryOn />} />
 
           {/* seller */}
           <Route path="/seller/profile" element={<SellerProfile />} />

@@ -45,27 +45,24 @@ const ProductDetails = () => {
   const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
   useEffect(() => {
-    fetchProductDetails();
-  }, [id]);
+    const fetchProductDetails = async () => {
+      try {
+        setLoading(true);
 
-  const fetchProductDetails = async () => {
-    try {
-      setLoading(true);
+        // Get current user
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+          await checkWishlistStatus(user.id, id);
+        }
 
-      // Get current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        await checkWishlistStatus(user.id, id);
-      }
-
-      // Fetch product details
-      const { data, error } = await supabase
-        .from("outfits")
-        .select(
-          `
+        // Fetch product details
+        const { data, error } = await supabase
+          .from("outfits")
+          .select(
+            `
           *,
           outfit_images (
             id,
@@ -82,58 +79,61 @@ const ProductDetails = () => {
             total_sales
           )
         `,
-        )
-        .eq("id", id)
-        .single();
+          )
+          .eq("id", id)
+          .single();
 
-      if (error) {
-        console.error("Error fetching product:", error);
+        if (error) {
+          console.error("Error fetching product:", error);
+          setLoading(false);
+          return;
+        }
+
+        if (data) {
+          // Sort images: main image first, then others
+          const sortedImages =
+            data.outfit_images?.sort((a, b) => b.is_main - a.is_main) || [];
+
+          setProduct({
+            id: data.id,
+            name: data.name || "Unnamed Product",
+            price: parseFloat(data.price) || 0,
+            description: data.description || "No description available.",
+            category: data.category || "Uncategorized",
+            subcategory: data.subcategory || "",
+            stock: data.stock_quantity || 0,
+            images: sortedImages,
+            seller: data.seller || {
+              business_name: "Unknown Seller",
+              email: "N/A",
+              phone: "N/A",
+              rating: 0,
+              total_sales: 0,
+            },
+            rating: 4.5, // You can add this to your database
+            reviewCount: 128, // You can add this to your database
+            material: data.material || "Premium Quality Fabric",
+            care: data.care_instructions || "Machine wash cold, tumble dry low",
+            features: data.features || [
+              "High-quality material",
+              "Comfortable fit",
+              "Durable construction",
+              "Easy to maintain",
+            ],
+          });
+
+          // Fetch reviews
+          await fetchReviews(id);
+        }
+      } catch (error) {
+        console.error("Error in fetchProductDetails:", error);
+      } finally {
         setLoading(false);
-        return;
       }
+    };
+    fetchProductDetails();
+  }, [id]);
 
-      if (data) {
-        // Sort images: main image first, then others
-        const sortedImages =
-          data.outfit_images?.sort((a, b) => b.is_main - a.is_main) || [];
-
-        setProduct({
-          id: data.id,
-          name: data.name || "Unnamed Product",
-          price: parseFloat(data.price) || 0,
-          description: data.description || "No description available.",
-          category: data.category || "Uncategorized",
-          subcategory: data.subcategory || "",
-          stock: data.stock_quantity || 0,
-          images: sortedImages,
-          seller: data.seller || {
-            business_name: "Unknown Seller",
-            email: "N/A",
-            phone: "N/A",
-            rating: 0,
-            total_sales: 0,
-          },
-          rating: 4.5, // You can add this to your database
-          reviewCount: 128, // You can add this to your database
-          material: data.material || "Premium Quality Fabric",
-          care: data.care_instructions || "Machine wash cold, tumble dry low",
-          features: data.features || [
-            "High-quality material",
-            "Comfortable fit",
-            "Durable construction",
-            "Easy to maintain",
-          ],
-        });
-
-        // Fetch reviews
-        await fetchReviews(id);
-      }
-    } catch (error) {
-      console.error("Error in fetchProductDetails:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
   console.log("Product ID:", id);
 
   const checkWishlistStatus = async (currentUserId, productId) => {
