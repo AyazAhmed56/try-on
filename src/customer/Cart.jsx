@@ -40,56 +40,54 @@ const Cart = () => {
         .from("cart")
         .select(
           `
-          id,
-          quantity,
-          size,
-          color,
-          created_at,
-          outfits (
-            id,
-            name,
-            category,
-            price,
-            discount_price,
-            stock,
-            brand,
-            outfit_images (
-              image_url,
-              is_main
-            )
-          )
-        `,
+    id,
+    quantity,
+    created_at,
+    outfits:outfit_id (
+      id,
+      name,
+      category,
+      price,
+      discount_price,
+      stock_quantity,
+      brand,
+      outfit_images (
+        image_url,
+        is_main
+      )
+    )
+  `,
         )
         .eq("customer_id", user.id)
         .order("created_at", { ascending: false });
-
+        
       if (error) {
         console.error("Error fetching cart:", error);
         setLoading(false);
         return;
       }
 
-      const formatted = data.map((item) => {
-        const outfit = item.outfits;
-        const mainImage =
-          outfit.outfit_images?.find((img) => img.is_main)?.image_url ||
-          "https://via.placeholder.com/150x200?text=No+Image";
+      const formatted = data
+        .filter((item) => item.outfits)
+        .map((item) => {
+          const outfit = item.outfits;
+          const mainImage =
+            outfit.outfit_images?.find((img) => img.is_main)?.image_url ||
+            "https://via.placeholder.com/150x200?text=No+Image";
 
-        return {
-          cartId: item.id,
-          id: outfit.id,
-          name: outfit.name,
-          category: outfit.category,
-          price: outfit.discount_price || outfit.price,
-          originalPrice: outfit.discount_price ? outfit.price : null,
-          stock: outfit.stock,
-          brand: outfit.brand,
-          image: mainImage,
-          quantity: item.quantity,
-          size: item.size,
-          color: item.color,
-        };
-      });
+          return {
+            cartId: item.id,
+            id: outfit.id,
+            name: outfit.name,
+            category: outfit.category,
+            price: outfit.discount_price || outfit.price,
+            originalPrice: outfit.discount_price ? outfit.price : null,
+            stock: outfit.stock_quantity,
+            brand: outfit.brand,
+            image: mainImage,
+            quantity: item.quantity,
+          };
+        });
 
       setCartItems(formatted);
       setLoading(false);
@@ -128,7 +126,7 @@ const Cart = () => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    await supabase.from("wishlists").insert({
+    await supabase.from("wishlist").insert({
       customer_id: user.id,
       outfit_id: item.id,
     });
@@ -239,16 +237,6 @@ const Cart = () => {
                           <h3 className="font-semibold text-lg text-gray-800 mb-2">
                             {item.name}
                           </h3>
-                          <div className="flex gap-4 text-sm text-gray-600">
-                            <span>
-                              Size:{" "}
-                              <span className="font-medium">{item.size}</span>
-                            </span>
-                            <span>
-                              Color:{" "}
-                              <span className="font-medium">{item.color}</span>
-                            </span>
-                          </div>
                         </div>
                         <button
                           onClick={() => removeFromCart(item.cartId)}
