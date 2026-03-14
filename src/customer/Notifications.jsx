@@ -2,18 +2,24 @@ import React, { useState, useEffect } from "react";
 import {
   Bell,
   Package,
+  ShoppingCart,
   Heart,
   Star,
+  TrendingUp,
   Gift,
   AlertCircle,
   CheckCircle,
+  Info,
   Trash2,
   Check,
+  X,
+  Filter,
   Search,
   Calendar,
   ArrowLeft,
   Clock,
   Mail,
+  MessageSquare,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
@@ -44,7 +50,7 @@ const Notifications = () => {
 
   useEffect(() => {
     fetchUserAndNotifications();
-  }, []);
+  },[]);
 
   useEffect(() => {
     applyFilters();
@@ -262,7 +268,7 @@ const Notifications = () => {
   };
 
   const deleteNotifications = async (notificationIds) => {
-    if (!window.confirm("Are you sure you want to delete these notifications?"))
+    if (!confirm("Are you sure you want to delete these notifications?"))
       return;
 
     try {

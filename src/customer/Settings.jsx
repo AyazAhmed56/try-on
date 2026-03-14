@@ -87,6 +87,7 @@ const Settings = () => {
 
   useEffect(() => {
     fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUserData = async () => {
@@ -123,6 +124,8 @@ const Settings = () => {
           gender: profileData.gender || "",
         });
       }
+
+      console.log("Error", profileError);
 
       // Fetch addresses
       const { data: addressData } = await supabase

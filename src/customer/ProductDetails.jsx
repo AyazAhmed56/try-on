@@ -45,95 +45,103 @@ const ProductDetails = () => {
   const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
-      try {
-        setLoading(true);
-
-        // Get current user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          setUserId(user.id);
-          await checkWishlistStatus(user.id, id);
-        }
-
-        // Fetch product details
-        const { data, error } = await supabase
-          .from("outfits")
-          .select(
-            `
-          *,
-          outfit_images (
-            id,
-            image_url,
-            is_main
-          ),
-          seller:seller_id (
-            id,
-            business_name,
-            email,
-            phone,
-            address,
-            rating,
-            total_sales
-          )
-        `,
-          )
-          .eq("id", id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching product:", error);
-          setLoading(false);
-          return;
-        }
-
-        if (data) {
-          // Sort images: main image first, then others
-          const sortedImages =
-            data.outfit_images?.sort((a, b) => b.is_main - a.is_main) || [];
-
-          setProduct({
-            id: data.id,
-            name: data.name || "Unnamed Product",
-            price: parseFloat(data.price) || 0,
-            description: data.description || "No description available.",
-            category: data.category || "Uncategorized",
-            subcategory: data.subcategory || "",
-            stock: data.stock_quantity || 0,
-            images: sortedImages,
-            seller: data.seller || {
-              business_name: "Unknown Seller",
-              email: "N/A",
-              phone: "N/A",
-              rating: 0,
-              total_sales: 0,
-            },
-            rating: 4.5, // You can add this to your database
-            reviewCount: 128, // You can add this to your database
-            material: data.material || "Premium Quality Fabric",
-            care: data.care_instructions || "Machine wash cold, tumble dry low",
-            features: data.features || [
-              "High-quality material",
-              "Comfortable fit",
-              "Durable construction",
-              "Easy to maintain",
-            ],
-          });
-
-          // Fetch reviews
-          await fetchReviews(id);
-        }
-      } catch (error) {
-        console.error("Error in fetchProductDetails:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProductDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const fetchProductDetails = async () => {
+    try {
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("outfits")
+        .select(
+          `
+  *,
+  outfit_images (
+    id,
+    image_url,
+    is_main
+  ),
+  seller_profiles (
+    id,
+    business_name,
+    email,
+    phone,
+    address,
+    rating,
+    total_sales
+  )
+`,
+        )
+        .eq("id", id)
+        .maybeSingle();
+
+      console.log("Product ID:", id);
+      console.log("Data:", data);
+      console.log("Error:", error);
+
+      if (error) throw error;
+
+      if (!data) {
+        setProduct(null);
+        return;
+      }
+
+      const sortedImages =
+        data.outfit_images?.sort((a, b) => b.is_main - a.is_main) || [];
+
+      setProduct({
+        id: data.id,
+        name: data.name,
+        price: parseFloat(data.price) || 0,
+        discountPrice: parseFloat(data.discount_price) || 0,
+        description: data.description || "",
+        stock: data.stock_quantity || 0,
+        images: sortedImages,
+
+        // SAFE DEFAULT VALUES
+        rating: data.rating || 0,
+        reviewCount: data.review_count || 0,
+        category: data.category || "Fashion",
+        subcategory: data.subcategory || "",
+        material: data.material || "Premium Fabric",
+        care: data.care || "Machine wash cold",
+        features: data.features || [
+          "High Quality",
+          "Comfort Fit",
+          "Stylish Design",
+        ],
+
+        seller: data.seller_profiles || {
+          business_name: "Unknown Seller",
+          rating: 0,
+          email: "",
+          phone: "",
+          address: "",
+          total_sales: 0,
+        },
+      });
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   console.log("Product ID:", id);
 
   const checkWishlistStatus = async (currentUserId, productId) => {
@@ -186,6 +194,18 @@ const ProductDetails = () => {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    if (userId && id) {
+      checkWishlistStatus(userId, id);
+    }
+  }, [userId, id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchReviews(id);
+    }
+  }, [id]);
 
   const toggleWishlist = async () => {
     if (!userId) {
@@ -387,14 +407,14 @@ const ProductDetails = () => {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden aspect-square">
-              {product.images.length > 0 ? (
+              {product.images?.length > 0 > 0 ? (
                 <>
                   <img
                     src={product.images[selectedImage]?.image_url}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
-                  {product.images.length > 1 && (
+                  {product.images?.length > 0 > 1 && (
                     <>
                       <button
                         onClick={prevImage}
@@ -430,7 +450,7 @@ const ProductDetails = () => {
             </div>
 
             {/* Thumbnail Images */}
-            {product.images.length > 1 && (
+            {product.images?.length > 0 > 1 && (
               <div className="grid grid-cols-4 gap-4">
                 {product.images.map((image, index) => (
                   <button
@@ -486,7 +506,7 @@ const ProductDetails = () => {
                     />
                   ))}
                   <span className="ml-2 text-gray-600 font-medium">
-                    {product.rating.toFixed(1)}
+                    {(product.rating || 0).toFixed(1)}
                   </span>
                 </div>
                 <span className="text-gray-500">
@@ -499,11 +519,14 @@ const ProductDetails = () => {
             <div className="bg-linear-to-r from-purple-50 to-pink-50 rounded-xl p-6">
               <div className="flex items-baseline space-x-3">
                 <span className="text-4xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  ${product.price.toFixed(2)}
+                  ${product.discountPrice || product.price}
                 </span>
-                <span className="text-gray-500 line-through text-lg">
-                  ${(product.price * 1.3).toFixed(2)}
-                </span>
+
+                {product.discountPrice && (
+                  <span className="text-gray-500 line-through text-lg">
+                    ${product.price}
+                  </span>
+                )}
                 <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
                   Save 30%
                 </span>
@@ -678,7 +701,7 @@ const ProductDetails = () => {
                     Key Features
                   </h3>
                   <ul className="space-y-2">
-                    {product.features.map((feature, index) => (
+                    {(product.features || []).map((feature, index) => (
                       <li
                         key={index}
                         className="flex items-start space-x-3 text-gray-700"

@@ -236,7 +236,7 @@ const TryOnRoom = () => {
                 <span>Try Different Photo</span>
               </button>
               <button
-                onClick={() => navigate("/products")}
+                onClick={() => navigate("/customer/products")}
                 className="px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2"
               >
                 <span className="text-xl">👔</span>
@@ -259,7 +259,7 @@ const TryOnRoom = () => {
               Please select an outfit from our collection to try on
             </p>
             <button
-              onClick={() => navigate("/products")}
+              onClick={() => navigate("/customer/products")}
               className="px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all inline-flex items-center space-x-2"
             >
               <span className="text-xl">👔</span>
