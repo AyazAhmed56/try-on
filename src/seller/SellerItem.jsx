@@ -21,7 +21,109 @@ const SellerItem = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [loading, setLoading] = useState(true);
-
+  const categories = {
+    "New Collection/Items": [],
+    "Festival Offers": [],
+    "Discount Offers": [],
+    Men: [
+      "Shirts",
+      "T-Shirts",
+      "Jeans",
+      "Trousers",
+      "Suits",
+      "Jackets",
+      "Sweaters",
+      "Shorts",
+      "Ethnic Wear",
+      "Innerwear",
+      "Sportswear",
+    ],
+    Women: [
+      "Dresses",
+      "Tops",
+      "Sarees",
+      "Salwar Suits",
+      "Lehenga",
+      "Jeans",
+      "Skirts",
+      "Jackets",
+      "Ethnic Wear",
+      "Western Wear",
+      "Innerwear",
+      "Sportswear",
+    ],
+    Kids: [
+      "Boys Wear",
+      "Girls Wear",
+      "Infant Wear",
+      "School Uniforms",
+      "Party Wear",
+      "Casual Wear",
+    ],
+    "Old Men": [
+      "Comfortable Wear",
+      "Traditional Wear",
+      "Casual Shirts",
+      "Trousers",
+      "Sweaters",
+      "Jackets",
+    ],
+    "Old Women": [
+      "Comfortable Wear",
+      "Sarees",
+      "Salwar Suits",
+      "Casual Wear",
+      "Traditional Wear",
+    ],
+    Newborn: [
+      "Bodysuits",
+      "Rompers",
+      "Sleep Suits",
+      "Bibs",
+      "Caps",
+      "Mittens",
+      "Booties",
+    ],
+    Accessories: [
+      "Bags",
+      "Wallets",
+      "Belts",
+      "Ties",
+      "Scarves",
+      "Hats",
+      "Caps",
+      "Sunglasses",
+      "Watches",
+      "Hair Accessories",
+    ],
+    Jewelleries: [
+      "Necklaces",
+      "Earrings",
+      "Rings",
+      "Bracelets",
+      "Bangles",
+      "Anklets",
+      "Pendants",
+      "Chains",
+      "Brooches",
+    ],
+    Shoes: [
+      "Formal Shoes",
+      "Casual Shoes",
+      "Sports Shoes",
+      "Loafers",
+      "Boots",
+      "Sneakers",
+    ],
+    Sandals: [
+      "Flat Sandals",
+      "Heeled Sandals",
+      "Flip Flops",
+      "Slippers",
+      "Gladiators",
+      "Wedges",
+    ],
+  };
   useEffect(() => {
     const fetchSellerItems = async () => {
       setLoading(true);
@@ -110,11 +212,27 @@ const SellerItem = () => {
       .includes(searchTerm.toLowerCase());
 
     const matchesCategory =
-      filterCategory === "all" ||
-      item.category?.toLowerCase() === filterCategory.toLowerCase();
+      filterCategory === "all" || item.category === filterCategory;
 
     return matchesSearch && matchesCategory;
   });
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this item?",
+    );
+    if (!confirmDelete) return;
+
+    const { error } = await supabase.from("outfits").delete().eq("id", id);
+
+    if (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete item");
+      return;
+    }
+
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
   if (loading) {
     return (
@@ -178,13 +296,15 @@ const SellerItem = () => {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="pl-11 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none bg-white"
+                className="pl-11 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
               >
                 <option value="all">All Categories</option>
-                <option value="men">Men</option>
-                <option value="women">Women</option>
-                <option value="kids">Kids</option>
-                <option value="accessories">Accessories</option>
+
+                {Object.keys(categories).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -301,7 +421,10 @@ const SellerItem = () => {
                     Edit
                   </Link>
 
-                  <button className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
