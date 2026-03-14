@@ -145,32 +145,105 @@
 // export default TryOnCanvas;
 
 import React, { useState } from "react";
+import { Sparkles, Wand2 } from "lucide-react";
+import { supabase } from "../../services/supabase";
+import { useParams } from "react-router-dom";
 
-const TryOnCanvas = ({ selectedOutfit }) => {
+const TryOnCanvas = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const { id } = useParams();
 
-  const handleTryOn = () => {
+  const handleTryOn = async () => {
+    console.log("Outfit ID from URL:", id);
+
+    if (!id) {
+      console.log("No outfit id found");
+      return;
+    }
+
     setLoading(true);
 
-    setTimeout(() => {
-      if (selectedOutfit === "black") {
-        setResult("/tryon/after-black.png");
-      } else {
-        setResult("/tryon/after-white.png");
-      }
+    const { data, error } = await supabase
+      .from("tryon_images")
+      .select("after_image")
+      .eq("outfit_id", id)
+      .maybeSingle();
 
+    console.log("Supabase result:", data, error);
+
+    if (error) {
+      console.log(error);
       setLoading(false);
-    }, 2000);
+      return;
+    }
+
+    if (!data) {
+      alert("No try-on available for this outfit");
+      setLoading(false);
+      return;
+    }
+
+    setTimeout(() => {
+      setResult(data.after_image);
+      setLoading(false);
+    }, 1500);
   };
 
   return (
-    <div>
-      <button onClick={handleTryOn}>Try On</button>
+    <div className="flex flex-col items-center gap-5 p-6">
+      <button
+        onClick={handleTryOn}
+        disabled={loading}
+        className="flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-sm font-semibold text-white shadow-md shadow-green-200 hover:shadow-lg hover:shadow-green-300 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{ background: "linear-gradient(135deg, #16a34a, #059669)" }}
+      >
+        {loading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Generating Try-On…
+          </>
+        ) : (
+          <>
+            <Wand2 className="w-4 h-4" />
+            Try On
+          </>
+        )}
+      </button>
 
-      {loading && <p>Generating Try-On...</p>}
+      {loading && (
+        <div className="flex flex-col items-center gap-3 py-8">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-md shadow-green-200"
+            style={{ background: "linear-gradient(135deg, #16a34a, #059669)" }}
+          >
+            <Sparkles className="w-6 h-6 text-white animate-pulse" />
+          </div>
+          <p className="text-sm text-gray-500 font-medium">
+            AI is generating your look…
+          </p>
+        </div>
+      )}
 
-      {result && <img src={result} width="350" />}
+      {result && !loading && (
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden shadow-sm w-full max-w-sm">
+            <img
+              src={result}
+              alt="Virtual try-on result"
+              className="w-full h-auto object-contain"
+              style={{ maxHeight: "480px" }}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 border border-green-100 rounded-xl">
+            <Sparkles className="w-4 h-4 text-green-600 shrink-0" />
+            <span className="text-sm font-semibold text-green-700">
+              Try-on complete!
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

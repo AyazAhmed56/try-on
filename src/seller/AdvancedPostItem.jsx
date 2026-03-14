@@ -55,40 +55,28 @@ const AdvancedPostItem = () => {
   const [productName, setProductName] = useState("");
   const [brandName, setBrandName] = useState("");
   const [description, setDescription] = useState("");
-
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [stocks, setStocks] = useState("");
-
   const [material, setMaterial] = useState("");
   const [careInstructions, setCareInstructions] = useState("");
 
   const mainImageRef = useRef(null);
   const additionalImagesRef = useRef(null);
   const { user } = useAuth();
-
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
 
   useEffect(() => {
     if (!id) return;
-
     const loadItem = async () => {
       const { data } = await supabase
         .from("outfits")
-        .select(
-          `
-        *,
-        outfit_images(*),
-        outfit_variants(*)
-      `,
-        )
+        .select(`*, outfit_images(*), outfit_variants(*)`)
         .eq("id", id)
         .single();
-
       if (!data) return;
-
       setProductName(data.name);
       setBrandName(data.brand);
       setSelectedCategory(data.category);
@@ -99,18 +87,15 @@ const AdvancedPostItem = () => {
       setStocks(data.stock_quantity);
       setMaterial(data.material);
       setCareInstructions(data.care_instructions);
-
       setMainImage(
         data.outfit_images.find((i) => i.is_main)?.image_url || null,
       );
       setAdditionalImages(
         data.outfit_images.filter((i) => !i.is_main).map((i) => i.image_url),
       );
-
       setSelectedSizes([...new Set(data.outfit_variants.map((v) => v.size))]);
       setSelectedColors([...new Set(data.outfit_variants.map((v) => v.color))]);
     };
-
     loadItem();
   }, [id]);
 
@@ -119,7 +104,6 @@ const AdvancedPostItem = () => {
       alert("Session expired. Please login again.");
       return;
     }
-
     try {
       if (
         !productName ||
@@ -132,13 +116,7 @@ const AdvancedPostItem = () => {
         alert("Please fill all required fields");
         return;
       }
-
       let outfitId = id;
-
-      /* -------------------------------
-    CREATE OR UPDATE OUTFIT
-    --------------------------------*/
-
       if (isEdit) {
         const { error } = await supabase
           .from("outfits")
@@ -147,17 +125,15 @@ const AdvancedPostItem = () => {
             brand: brandName,
             category: selectedCategory,
             subcategory: selectedSubcategory,
-            description: description,
+            description,
             price: Number(price),
             discount_price: discountPrice ? Number(discountPrice) : null,
-            stock_quantity: Number(stocks), // ✅ FIXED
-            material: material,
+            stock_quantity: Number(stocks),
+            material,
             care_instructions: careInstructions,
           })
           .eq("id", outfitId);
-
         if (error) throw error;
-
         await supabase
           .from("outfit_variants")
           .delete()
@@ -173,76 +149,49 @@ const AdvancedPostItem = () => {
               brand: brandName,
               category: selectedCategory,
               subcategory: selectedSubcategory,
-              description: description,
+              description,
               price: Number(price),
               discount_price: discountPrice ? Number(discountPrice) : null,
-              stock_quantity: Number(stocks), // ✅ FIXED HERE
-              material: material,
+              stock_quantity: Number(stocks),
+              material,
               care_instructions: careInstructions,
             },
           ])
           .select()
           .single();
-
         if (error) throw error;
-
         outfitId = data.id;
       }
-
-      /* -------------------------------
-    INSERT VARIANTS
-    --------------------------------*/
-
       if (selectedSizes.length && selectedColors.length) {
         const variants = [];
-
         selectedSizes.forEach((size) => {
           selectedColors.forEach((color) => {
-            variants.push({
-              outfit_id: outfitId,
-              size: size,
-              color: color,
-            });
+            variants.push({ outfit_id: outfitId, size, color });
           });
         });
-
         const { error } = await supabase
           .from("outfit_variants")
           .insert(variants);
-
         if (error) throw error;
       }
-
-      /* -------------------------------
-    INSERT IMAGES
-    --------------------------------*/
-
       const images = [
-        {
-          outfit_id: outfitId,
-          image_url: mainImage,
-          is_main: true,
-        },
+        { outfit_id: outfitId, image_url: mainImage, is_main: true },
         ...additionalImages.map((img) => ({
           outfit_id: outfitId,
           image_url: img,
           is_main: false,
         })),
       ];
-
       const { error: imageError } = await supabase
         .from("outfit_images")
         .insert(images);
-
       if (imageError) throw imageError;
-
       alert(
         isEdit ? "Item updated successfully!" : "Item posted successfully!",
       );
-
       navigate("/seller/dashboard");
     } catch (error) {
-      console.error("Post item error:", error);
+      console.error(error);
       alert("Something went wrong while saving the item");
     }
   };
@@ -362,64 +311,43 @@ const AdvancedPostItem = () => {
   const handleImageUpload = async (e, isMain = false) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-
     for (const file of files) {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = fileName;
-
-      // ✅ Upload to Supabase Storage
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
       const { error } = await supabase.storage
-        .from("garments") // bucket name
+        .from("garments")
         .upload(filePath, file);
-
       if (error) {
         console.error(error);
         alert("Upload failed");
         return;
       }
-
-      // ✅ Get public URL
       const { data } = supabase.storage.from("garments").getPublicUrl(filePath);
-
-      const publicUrl = data.publicUrl;
-
-      // ✅ Save URL (NOT base64)
       if (isMain) {
-        setMainImage(publicUrl);
+        setMainImage(data.publicUrl);
       } else {
-        setAdditionalImages((prev) => [...prev, publicUrl]);
+        setAdditionalImages((prev) => [...prev, data.publicUrl]);
       }
     }
   };
 
-  const removeAdditionalImage = (index) => {
+  const removeAdditionalImage = (index) =>
     setAdditionalImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const toggleSize = (size) => {
+  const toggleSize = (size) =>
     setSelectedSizes((prev) =>
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
     );
-  };
-
-  const toggleColor = (color) => {
+  const toggleColor = (color) =>
     setSelectedColors((prev) =>
       prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
     );
-  };
 
   const addCustomColor = () => {
     if (!customColorName.trim()) {
       alert("Please enter a color name");
       return;
     }
-
-    const newColor = {
-      name: customColorName.trim(),
-      code: customColorCode,
-    };
-
+    const newColor = { name: customColorName.trim(), code: customColorCode };
     setColorsList((prev) => [...prev, newColor]);
     setSelectedColors((prev) => [...prev, newColor.name]);
     setCustomColorName("");
@@ -430,522 +358,464 @@ const AdvancedPostItem = () => {
     if (
       selectedCategory.includes("Shoes") ||
       selectedCategory.includes("Sandals")
-    ) {
+    )
       return sizes.shoes;
-    } else if (
+    if (
       selectedCategory.includes("Kids") ||
       selectedCategory.includes("Newborn")
-    ) {
+    )
       return sizes.kids;
-    } else if (selectedCategory.includes("Accessories")) {
-      return sizes.accessories;
-    } else if (selectedCategory.includes("Jewelleries")) {
-      return sizes.jewellery;
-    }
+    if (selectedCategory.includes("Accessories")) return sizes.accessories;
+    if (selectedCategory.includes("Jewelleries")) return sizes.jewellery;
     return sizes.clothing;
   };
 
+  // Reusable styles
+  const inputCls =
+    "w-full px-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none transition-all text-gray-800 placeholder-gray-400";
+  const labelCls = "block text-sm font-medium text-gray-700 mb-1.5";
+
+  const SectionHeader = ({ num, title }) => (
+    <h2 className="text-base font-bold text-gray-900 flex items-center gap-3 mb-4">
+      <div
+        className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0"
+        style={{ background: "linear-gradient(135deg, #16a34a, #059669)" }}
+      >
+        {num}
+      </div>
+      {title}
+    </h2>
+  );
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-purple-50 py-12 px-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-300 rounded-full blur-3xl opacity-20 animate-pulse delay-1000"></div>
+    <div className="min-h-screen bg-gray-50/50 py-10 px-4">
+      {/* Background blobs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-125 h-125 bg-green-100 rounded-full blur-3xl opacity-50 animate-pulse" />
+        <div className="absolute -bottom-40 -right-40 w-125 h-125 bg-emerald-100 rounded-full blur-3xl opacity-40 animate-pulse [animation-delay:2s]" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto">
+      <div className="relative max-w-4xl mx-auto">
+        {/* Back link */}
         <Link
           to="/seller/dashboard"
-          className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-green-700 font-medium mb-6 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
 
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            Post New Item
+        {/* Page Title */}
+        <div className="text-center mb-7">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-1">
+            {isEdit ? "Edit Item" : "Post New Item"}
           </h1>
-          <p className="text-gray-600">Add a new product to your store</p>
+          <p className="text-sm text-gray-400">
+            Add a new product to your store
+          </p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
-          <div className="space-y-8">
-            {/* Category Selection */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  1
-                </div>
-                Category Selection
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-8 space-y-8">
+          {/* ── 1. CATEGORY ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="1" title="Category Selection" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Main Category *</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setSelectedSubcategory("");
+                  }}
+                  className={inputCls}
+                >
+                  <option value="">Select Category</option>
+                  {Object.keys(categories).map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedCategory && categories[selectedCategory].length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Main Category *
-                  </label>
+                  <label className={labelCls}>Subcategory *</label>
                   <select
-                    value={selectedCategory}
-                    onChange={(e) => {
-                      setSelectedCategory(e.target.value);
-                      setSelectedSubcategory("");
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none bg-white"
+                    value={selectedSubcategory}
+                    onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    className={inputCls}
                   >
-                    <option value="">Select Category</option>
-                    {Object.keys(categories).map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
+                    <option value="">Select Subcategory</option>
+                    {categories[selectedCategory].map((s) => (
+                      <option key={s} value={s}>
+                        {s}
                       </option>
                     ))}
                   </select>
                 </div>
+              )}
+            </div>
+          </div>
 
-                {selectedCategory &&
-                  categories[selectedCategory].length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Subcategory *
-                      </label>
-                      <select
-                        value={selectedSubcategory}
-                        onChange={(e) => setSelectedSubcategory(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none bg-white"
-                      >
-                        <option value="">Select Subcategory</option>
-                        {categories[selectedCategory].map((subcat) => (
-                          <option key={subcat} value={subcat}>
-                            {subcat}
-                          </option>
-                        ))}
-                      </select>
+          {/* ── 2. PRODUCT DETAILS ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="2" title="Product Details" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className={labelCls}>Product Name *</label>
+                <input
+                  type="text"
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
+                  placeholder="Enter product name"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Brand Name</label>
+                <input
+                  type="text"
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="Enter brand name"
+                  className={inputCls}
+                />
+              </div>
+            </div>
+            <div>
+              <label className={labelCls}>Product Description *</label>
+              <textarea
+                rows="4"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe your product in detail…"
+                className={`${inputCls} resize-none`}
+              />
+            </div>
+          </div>
+
+          {/* ── 3. PRICING ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="3" title="Pricing & Stock" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  label: "Price (₹) *",
+                  val: price,
+                  set: setPrice,
+                  placeholder: "0",
+                },
+                {
+                  label: "Discount Price (₹)",
+                  val: discountPrice,
+                  set: setDiscountPrice,
+                  placeholder: "0",
+                },
+                {
+                  label: "Stock Quantity *",
+                  val: stocks,
+                  set: setStocks,
+                  placeholder: "0",
+                },
+              ].map(({ label, val, set, placeholder }) => (
+                <div key={label}>
+                  <label className={labelCls}>{label}</label>
+                  <input
+                    type="number"
+                    value={val}
+                    onChange={(e) => set(e.target.value)}
+                    placeholder={placeholder}
+                    className={inputCls}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 4. COLORS ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="4" title="Available Colors" />
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2.5 mb-5">
+              {colorsList.map((color) => (
+                <button
+                  key={color.name}
+                  type="button"
+                  onClick={() => toggleColor(color.name)}
+                  className={`relative p-2.5 rounded-xl border-2 transition-all duration-200 ${selectedColors.includes(color.name) ? "border-green-500 bg-green-50/60" : "border-gray-200 hover:border-green-300"}`}
+                >
+                  <div
+                    className="w-full h-10 rounded-lg mb-1.5"
+                    style={{
+                      backgroundColor: color.code,
+                      border:
+                        color.code === "#FFFFFF" ? "1px solid #E5E7EB" : "none",
+                    }}
+                  />
+                  <p className="text-xs text-gray-600 text-center font-medium line-clamp-1">
+                    {color.name}
+                  </p>
+                  {selectedColors.includes(color.name) && (
+                    <div
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{
+                        background: "linear-gradient(135deg, #16a34a, #059669)",
+                      }}
+                    >
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
                     </div>
                   )}
-              </div>
+                </button>
+              ))}
             </div>
 
-            {/* Product Details */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  2
-                </div>
-                Product Details
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Name *
-                  </label>
+            {/* Custom color */}
+            <div className="bg-green-50/60 border border-green-100 rounded-2xl p-5 mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-green-600" /> Add Custom Color
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  placeholder="Color name (e.g., Wine Red)"
+                  value={customColorName}
+                  onChange={(e) => setCustomColorName(e.target.value)}
+                  className={`${inputCls} flex-1`}
+                />
+                <div className="flex items-center gap-3">
                   <input
-                    type="text"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                    placeholder="Enter product name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
+                    type="color"
+                    value={customColorCode}
+                    onChange={(e) => setCustomColorCode(e.target.value)}
+                    className="w-14 h-11 p-1 border border-gray-200 rounded-xl cursor-pointer"
+                    title="Pick a color"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Brand Name
-                  </label>
-                  <input
-                    type="text"
-                    value={brandName}
-                    onChange={(e) => setBrandName(e.target.value)}
-                    placeholder="Enter brand name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Description *
-                </label>
-                <textarea
-                  rows="4"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe your product in detail..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none resize-none"
-                ></textarea>
-              </div>
-            </div>
-
-            {/* Pricing */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  3
-                </div>
-                Pricing & Stock
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Discount Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={discountPrice}
-                    onChange={(e) => setDiscountPrice(e.target.value)}
-                    placeholder="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Quantity *
-                  </label>
-                  <input
-                    type="number"
-                    value={stocks}
-                    onChange={(e) => setStocks(e.target.value)}
-                    placeholder="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Color Selection */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  4
-                </div>
-                Available Colors
-              </h2>
-
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                {colorsList.map((color) => (
                   <button
-                    key={color.name}
                     type="button"
-                    onClick={() => toggleColor(color.name)}
-                    className={`relative p-3 rounded-lg border-2 transition-all duration-200 ${
-                      selectedColors.includes(color.name)
-                        ? "border-purple-600 bg-purple-50"
-                        : "border-gray-200 hover:border-purple-300"
-                    }`}
+                    onClick={addCustomColor}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-sm shadow-green-200 hover:shadow-md transition-all"
+                    style={{
+                      background: "linear-gradient(135deg, #16a34a, #059669)",
+                    }}
                   >
-                    <div
-                      className="w-full h-12 rounded-md mb-2"
-                      style={{
-                        backgroundColor: color.code,
-                        border:
-                          color.code === "#FFFFFF"
-                            ? "1px solid #E5E7EB"
-                            : "none",
-                      }}
-                    ></div>
-                    <p className="text-xs text-gray-700 text-center font-medium line-clamp-1">
-                      {color.name}
-                    </p>
-                    {selectedColors.includes(color.name) && (
-                      <div className="absolute top-1 right-1 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
+                    <Plus className="w-4 h-4" /> Add
                   </button>
-                ))}
+                </div>
               </div>
+            </div>
 
-              {/* Add Custom Color Section */}
-              <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
-                <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-purple-600" />
-                  Add Custom Color
-                </h3>
+            {selectedColors.length > 0 && (
+              <div className="bg-green-50/40 border border-green-100 rounded-xl p-4">
+                <p className="text-xs font-semibold text-gray-600 mb-2.5 uppercase tracking-wide">
+                  Selected Colors ({selectedColors.length})
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedColors.map((colorName) => {
+                    const color = colorsList.find((c) => c.name === colorName);
+                    return (
+                      <span
+                        key={colorName}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-green-100 shadow-sm text-sm"
+                      >
+                        <div
+                          className="w-4 h-4 rounded-full border border-gray-200 shrink-0"
+                          style={{ backgroundColor: color?.code || "#000000" }}
+                        />
+                        <span className="text-gray-700 font-medium">
+                          {colorName}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleColor(colorName)}
+                          className="text-gray-300 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    placeholder="Color name (e.g., Wine Red)"
-                    value={customColorName}
-                    onChange={(e) => setCustomColorName(e.target.value)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"
-                  />
+          {/* ── 5. SIZES ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="5" title="Available Sizes" />
+            <div className="flex flex-wrap gap-2.5 mb-4">
+              {getSizeOptions().map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(size)}
+                  className={`px-5 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${selectedSizes.includes(size) ? "text-white border-transparent shadow-sm" : "border-gray-200 text-gray-600 hover:border-green-400"}`}
+                  style={
+                    selectedSizes.includes(size)
+                      ? {
+                          background:
+                            "linear-gradient(135deg, #16a34a, #059669)",
+                        }
+                      : {}
+                  }
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+            {selectedSizes.length > 0 && (
+              <div className="bg-green-50/40 border border-green-100 rounded-xl px-4 py-3">
+                <p className="text-xs font-semibold text-gray-500">
+                  Selected:{" "}
+                  <span className="text-green-700 font-bold">
+                    {selectedSizes.join(", ")}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
 
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={customColorCode}
-                      onChange={(e) => setCustomColorCode(e.target.value)}
-                      className="w-16 h-12 p-1 border border-gray-300 rounded-lg cursor-pointer"
-                      title="Pick a color"
+          {/* ── 6. MATERIAL & CARE ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="6" title="Material & Care Instructions" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Material</label>
+                <input
+                  type="text"
+                  value={material}
+                  onChange={(e) => setMaterial(e.target.value)}
+                  placeholder="e.g., 100% Cotton, Polyester Blend"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Care Instructions</label>
+                <input
+                  type="text"
+                  value={careInstructions}
+                  onChange={(e) => setCareInstructions(e.target.value)}
+                  placeholder="e.g., Machine wash cold, Tumble dry low"
+                  className={inputCls}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── 7. IMAGES ── */}
+          <div className="border-b border-gray-100 pb-7">
+            <SectionHeader num="7" title="Product Images" />
+
+            {/* Main image */}
+            <div className="mb-5">
+              <label className={labelCls}>Main Product Image *</label>
+              <div
+                onClick={() => mainImageRef.current?.click()}
+                className="relative w-full h-72 border-2 border-dashed border-green-200 rounded-2xl hover:border-green-400 hover:bg-green-50/30 transition-all cursor-pointer bg-gray-50 overflow-hidden"
+              >
+                {mainImage ? (
+                  <>
+                    <img
+                      src={mainImage}
+                      alt="Main"
+                      className="w-full h-full object-cover"
                     />
-
                     <button
-                      type="button"
-                      onClick={addCustomColor}
-                      className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMainImage(null);
+                      }}
+                      className="absolute top-3 right-3 w-9 h-9 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center justify-center shadow-md transition-colors"
                     >
-                      <Plus className="w-4 h-4" />
-                      Add
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-green-500" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-600">
+                      Click to upload main image
+                    </p>
+                    <p className="text-xs text-gray-400">PNG, JPG up to 10MB</p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={mainImageRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, true)}
+                className="hidden"
+              />
+            </div>
+
+            {/* Additional images */}
+            <div>
+              <label className={labelCls}>Additional Images (Up to 10)</label>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {additionalImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className="relative group rounded-xl overflow-hidden border border-gray-100"
+                  >
+                    <img
+                      src={img}
+                      alt={`Additional ${index + 1}`}
+                      className="w-full h-28 object-cover"
+                    />
+                    <button
+                      onClick={() => removeAdditionalImage(index)}
+                      className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                </div>
-              </div>
-
-              {selectedColors.length > 0 && (
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <p className="text-sm font-medium text-gray-700 mb-3">
-                    Selected Colors ({selectedColors.length}):
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedColors.map((colorName) => {
-                      const color = colorsList.find(
-                        (c) => c.name === colorName,
-                      );
-                      return (
-                        <span
-                          key={colorName}
-                          className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-full border border-purple-200 shadow-sm"
-                        >
-                          <div
-                            className="w-5 h-5 rounded-full border border-gray-300"
-                            style={{
-                              backgroundColor: color?.code || "#000000",
-                            }}
-                          ></div>
-                          <span className="text-sm text-gray-700 font-medium">
-                            {colorName}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => toggleColor(colorName)}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Size Selection */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  5
-                </div>
-                Available Sizes
-              </h2>
-
-              <div className="flex flex-wrap gap-3">
-                {getSizeOptions().map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => toggleSize(size)}
-                    className={`px-6 py-3 rounded-lg border-2 font-medium transition-all duration-200 ${
-                      selectedSizes.includes(size)
-                        ? "border-purple-600 bg-purple-600 text-white shadow-md"
-                        : "border-gray-300 hover:border-purple-400 text-gray-700"
-                    }`}
-                  >
-                    {size}
-                  </button>
                 ))}
+                {additionalImages.length < 10 && (
+                  <div
+                    onClick={() => additionalImagesRef.current?.click()}
+                    className="w-full h-28 border-2 border-dashed border-green-200 rounded-xl hover:border-green-400 hover:bg-green-50/30 transition-all cursor-pointer bg-gray-50 flex flex-col items-center justify-center gap-1.5"
+                  >
+                    <Upload className="w-5 h-5 text-green-400" />
+                    <p className="text-xs text-gray-400 font-medium">
+                      Add Image
+                    </p>
+                  </div>
+                )}
               </div>
-
-              {selectedSizes.length > 0 && (
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <p className="text-sm font-medium text-gray-700">
-                    Selected Sizes:{" "}
-                    <span className="text-purple-600">
-                      {selectedSizes.join(", ")}
-                    </span>
-                  </p>
-                </div>
-              )}
+              <input
+                ref={additionalImagesRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                className="hidden"
+              />
             </div>
+          </div>
 
-            {/* Material & Care */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  6
-                </div>
-                Material & Care Instructions
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Material
-                  </label>
-                  <input
-                    type="text"
-                    value={material}
-                    onChange={(e) => setMaterial(e.target.value)}
-                    placeholder="e.g., 100% Cotton, Polyester Blend"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Care Instructions
-                  </label>
-                  <input
-                    type="text"
-                    value={careInstructions}
-                    onChange={(e) => setCareInstructions(e.target.value)}
-                    placeholder="e.g., Machine wash cold, Tumble dry low"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Product Images */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
-                  7
-                </div>
-                Product Images
-              </h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Main Product Image *
-                </label>
-                <div
-                  onClick={() => mainImageRef.current?.click()}
-                  className="relative w-full h-80 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 transition-all duration-200 cursor-pointer bg-gray-50 hover:bg-purple-50 overflow-hidden"
-                >
-                  {mainImage ? (
-                    <>
-                      <img
-                        src={mainImage}
-                        alt="Main"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMainImage(null);
-                        }}
-                        className="absolute top-4 right-4 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <ImageIcon className="w-16 h-16 text-gray-400 mb-4" />
-                      <p className="text-gray-600 font-medium">
-                        Click to upload main image
-                      </p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        PNG, JPG up to 10MB
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <input
-                  ref={mainImageRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, true)}
-                  className="hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Images (Up to 10)
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {additionalImages.map((img, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={img}
-                        alt={`Additional ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={() => removeAdditionalImage(index)}
-                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                  {additionalImages.length < 10 && (
-                    <div
-                      onClick={() => additionalImagesRef.current?.click()}
-                      className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 transition-all cursor-pointer bg-gray-50 hover:bg-purple-50 flex flex-col items-center justify-center"
-                    >
-                      <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                      <p className="text-xs text-gray-500">Add Image</p>
-                    </div>
-                  )}
-                </div>
-                <input
-                  ref={additionalImagesRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-              </div>
-            </div>
-
-            {/* Submit Buttons */}
-            <div className="flex gap-4 pt-8">
-              <button
-                type="button"
-                onClick={handlePostItem}
-                className="flex-1 py-4 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <Save className="w-5 h-5" />
-                Post Item
-              </button>
-              <Link
-                to="/seller/dashboard"
-                className="px-8 py-4 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </Link>
-            </div>
+          {/* ── SUBMIT ── */}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handlePostItem}
+              className="flex-1 py-3.5 text-sm font-semibold text-white rounded-xl flex items-center justify-center gap-2 shadow-md shadow-green-200 hover:shadow-lg hover:shadow-green-300 active:scale-[0.98] transition-all"
+              style={{
+                background: "linear-gradient(135deg, #16a34a, #059669)",
+              }}
+            >
+              <Save className="w-4 h-4" />
+              {isEdit ? "Update Item" : "Post Item"}
+            </button>
+            <Link
+              to="/seller/dashboard"
+              className="px-7 py-3.5 bg-gray-100 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </Link>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.3; transform: scale(1.05); }
-        }
-        .animate-pulse { animation: pulse 4s ease-in-out infinite; }
-        .delay-1000 { animation-delay: 2s; }
-      `}</style>
     </div>
   );
 };

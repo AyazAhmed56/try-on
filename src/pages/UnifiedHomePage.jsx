@@ -5,32 +5,26 @@ import {
   ShoppingBag,
   Store,
   ArrowRight,
-  Sparkles,
   TrendingUp,
-  Users,
-  Package,
   Heart,
   Shield,
   Zap,
   Check,
+  Leaf,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 const UnifiedHomePage = () => {
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState(null); // 'customer' | 'seller' | null
+  const [userRole, setUserRole] = useState(null);
 
-  /* ---------- FETCH USER ROLE ---------- */
   useEffect(() => {
     let mounted = true;
-
     const loadUserRole = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-
-      // Guest user
       if (!user) {
         if (mounted) {
           setUserRole(null);
@@ -38,23 +32,15 @@ const UnifiedHomePage = () => {
         }
         return;
       }
-
-      // Logged-in user → fetch role
       const { data, error } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
-
-      if (!error && mounted) {
-        setUserRole(data?.role || null);
-      }
-
+      if (!error && mounted) setUserRole(data?.role || null);
       if (mounted) setLoading(false);
     };
-
     loadUserRole();
-
     return () => {
       mounted = false;
     };
@@ -62,279 +48,463 @@ const UnifiedHomePage = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+      <div
+        className="hp-root min-h-screen flex items-center justify-center"
+        style={{
+          background: "linear-gradient(135deg, #F0FDF4, #fff, #ECFDF5)",
+        }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg,#16A34A,#10B981)",
+              animation: "spin 1.2s linear infinite",
+            }}
+          >
+            <Leaf className="w-7 h-7 text-white" />
+          </div>
+          <p style={{ color: "#16A34A", fontWeight: 600, fontSize: 15 }}>
+            Loading…
+          </p>
+        </div>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-purple-50">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-purple-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-400 rounded-full blur-3xl opacity-30 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-20 animate-pulse delay-2000"></div>
+    <div
+      className="hp-root min-h-screen"
+      style={{
+        background:
+          "linear-gradient(160deg, #F0FDF4 0%, #ffffff 45%, #ECFDF5 100%)",
+      }}
+    >
+      {/* Fixed background blobs */}
+      <div
+        className="fixed inset-0 overflow-hidden pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
+        <div className="blob blob-tl" />
+        <div className="blob blob-br" />
+        <div className="blob blob-c" />
+        <svg
+          className="absolute inset-0 w-full h-full"
+          style={{ opacity: 0.025 }}
+        >
+          <defs>
+            <pattern
+              id="hp-dots"
+              x="0"
+              y="0"
+              width="32"
+              height="32"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="2" cy="2" r="1.4" fill="#16A34A" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#hp-dots)" />
+        </svg>
       </div>
+
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-        <div className="relative z-10 text-center max-w-5xl mx-auto">
-          {/* Logo/Brand */}
-          <div className="mb-8 animate-fade-in">
-            <div className="w-24 h-24 bg-linear-to-br from-purple-600 to-pink-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl">
-              <img
-                src="/tryon-logo-circular-premium.svg"
-                alt="Logo"
-                className="w-32 h-32 scale-130 hover:scale-170 ease-in-out object-contain"
-              />
-            </div>
-            <h1 className="text-7xl md:text-8xl h-29 font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-              Try-on
-            </h1>
-            <p className="text-2xl md:text-3xl text-gray-700 font-medium mb-6">
-              Virtual Outfit Try Web Application
-            </p>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
-              Experience the future of fashion with AI-powered virtual try-on
-              technology. See how outfits look on you before making a purchase!
-            </p>
+      {/* ═══════════════ HERO ═══════════════ */}
+      <section
+        className="relative flex flex-col items-center px-4 pt-20 pb-16"
+        style={{ zIndex: 1 }}
+      >
+        {/* ── BANNER IMAGE ── */}
+        <div className="banner-wrap w-full max-w-6xl mx-auto mt-4 mb-10">
+          <div
+            className="relative rounded-3xl overflow-hidden"
+            style={{
+              boxShadow:
+                "0 8px 48px rgba(22,163,74,0.18), 0 2px 12px rgba(0,0,0,0.08)",
+              border: "1px solid rgba(187,247,208,0.5)",
+            }}
+          >
+            <img
+              src="/banner.jpg"
+              alt="Try-on Virtual Fitting Experience"
+              className="banner-img w-full object-cover"
+              style={{ display: "block", maxHeight: 420 }}
+            />
+            {/* fade-out gradient at bottom */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-24"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(240,253,244,0.7), transparent)",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* ── LOGO ── */}
+        <div className="hero-brand text-center mb-10">
+          <div className="mx-auto mb-6">
+            <img
+              src="/logo.jpg"
+              alt="Try-on Logo"
+              className="logo-img mx-auto object-contain hover:scale-105 transition-transform duration-300"
+              style={{
+                maxWidth: 280,
+                width: "100%",
+                height: "auto",
+                filter: "drop-shadow(0 4px 16px rgba(22,163,74,0.18))",
+              }}
+            />
           </div>
 
-          {/* Conditional Dashboard Buttons Based on User Role */}
-          {userRole === "customer" && (
-            <div className="animate-fade-in-delay">
-              <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl max-w-md mx-auto mb-8">
-                <div className="w-16 h-16 bg-linear-to-br from-purple-100 to-pink-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <ShoppingBag className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  Welcome Back, Customer!
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Continue your shopping journey
-                </p>
-                <Link
-                  to="/customer/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200"
-                >
-                  Go to Shopping
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-          )}
+          <p
+            style={{
+              fontSize: 16,
+              color: "#6B7280",
+              maxWidth: 560,
+              margin: "0 auto 28px",
+              lineHeight: 1.7,
+            }}
+          >
+            Experience the future of fashion with AI-powered virtual try-on
+            technology. See how outfits look on you before making a purchase!
+          </p>
 
-          {userRole === "seller" && (
-            <div className="animate-fade-in-delay">
-              <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl max-w-md mx-auto mb-8">
-                <div className="w-16 h-16 bg-linear-to-br from-pink-100 to-purple-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Store className="w-8 h-8 text-pink-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  Welcome Back, Seller!
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Manage your store and products
-                </p>
-                <Link
-                  to="/seller/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-pink-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:from-pink-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200"
-                >
-                  Go to Dashboard
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* For guests (not logged in) - Show both options */}
-          {!userRole && (
-            <div className="animate-fade-in-delay">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
-                {/* Customer Card */}
-                <div className="group bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 bg-linear-to-br from-purple-100 to-pink-100 rounded-full mx-auto mb-6 flex items-center justify-center group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
-                    <ShoppingBag className="w-10 h-10 text-purple-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                    I'm a Customer
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Browse products and try them virtually before purchasing
-                  </p>
-
-                  <ul className="text-left space-y-3 mb-8">
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <Check className="w-5 h-5 text-purple-600" />
-                      Virtual try-on experience
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <Check className="w-5 h-5 text-purple-600" />
-                      Browse latest collections
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <Check className="w-5 h-5 text-purple-600" />
-                      Wishlist & favorites
-                    </li>
-                  </ul>
-
-                  <Link
-                    to="/login"
-                    className="block w-full py-4 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200"
-                  >
-                    Start Shopping
-                  </Link>
-                </div>
-
-                {/* Seller Card */}
-                <div className="group bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 bg-linear-to-br from-pink-100 to-purple-100 rounded-full mx-auto mb-6 flex items-center justify-center group-hover:from-pink-600 group-hover:to-purple-600 transition-all duration-300">
-                    <Store className="w-10 h-10 text-pink-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                    I'm a Seller
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Showcase your products with virtual try-on technology
-                  </p>
-
-                  <ul className="text-left space-y-3 mb-8">
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <Check className="w-5 h-5 text-pink-600" />
-                      Upload product catalog
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <Check className="w-5 h-5 text-pink-600" />
-                      Manage inventory
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <Check className="w-5 h-5 text-pink-600" />
-                      Track analytics
-                    </li>
-                  </ul>
-
-                  <Link
-                    to="/login"
-                    className="block w-full py-4 bg-linear-to-r from-pink-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:from-pink-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200"
-                  >
-                    Start Selling
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Trust badges */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+            {["AI-Powered", "Secure & Private", "50K+ Users"].map((b, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium"
+                style={{
+                  background: "#F0FDF4",
+                  border: "1px solid #BBF7D0",
+                  color: "#15803D",
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#22C55E",
+                    display: "inline-block",
+                  }}
+                />
+                {b}
+              </span>
+            ))}
+          </div>
         </div>
+
+        {/* ── CUSTOMER logged in ── */}
+        {userRole === "customer" && (
+          <div className="role-card-wrap w-full max-w-md mx-auto">
+            <div
+              className="role-card bg-white rounded-3xl p-8 mb-8"
+              style={{
+                boxShadow: "0 8px 40px rgba(22,163,74,0.12)",
+                border: "1px solid rgba(187,247,208,0.7)",
+              }}
+            >
+              <div
+                className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg,#DCFCE7,#BBF7D0)",
+                }}
+              >
+                <ShoppingBag
+                  style={{ width: 28, height: 28, color: "#16A34A" }}
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-1 text-center">
+                Welcome Back, Customer!
+              </h3>
+              <p
+                style={{
+                  color: "#6B7280",
+                  marginBottom: 24,
+                  textAlign: "center",
+                }}
+              >
+                Continue your shopping journey
+              </p>
+              <Link
+                to="/customer/dashboard"
+                className="cta-btn flex items-center justify-center gap-2 px-8 py-4 text-white font-semibold rounded-full"
+                style={{
+                  background: "linear-gradient(135deg,#16A34A,#10B981)",
+                  boxShadow: "0 4px 16px rgba(22,163,74,0.35)",
+                  textDecoration: "none",
+                }}
+              >
+                Go to Shopping <ArrowRight style={{ width: 18, height: 18 }} />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ── SELLER logged in ── */}
+        {userRole === "seller" && (
+          <div className="role-card-wrap w-full max-w-md mx-auto">
+            <div
+              className="role-card bg-white rounded-3xl p-8 mb-8"
+              style={{
+                boxShadow: "0 8px 40px rgba(22,163,74,0.12)",
+                border: "1px solid rgba(187,247,208,0.7)",
+              }}
+            >
+              <div
+                className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg,#BBF7D0,#DCFCE7)",
+                }}
+              >
+                <Store style={{ width: 28, height: 28, color: "#059669" }} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-1 text-center">
+                Welcome Back, Seller!
+              </h3>
+              <p
+                style={{
+                  color: "#6B7280",
+                  marginBottom: 24,
+                  textAlign: "center",
+                }}
+              >
+                Manage your store and products
+              </p>
+              <Link
+                to="/seller/dashboard"
+                className="cta-btn flex items-center justify-center gap-2 px-8 py-4 text-white font-semibold rounded-full"
+                style={{
+                  background: "linear-gradient(135deg,#059669,#16A34A)",
+                  boxShadow: "0 4px 16px rgba(5,150,105,0.35)",
+                  textDecoration: "none",
+                }}
+              >
+                Go to Dashboard <ArrowRight style={{ width: 18, height: 18 }} />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ── GUEST ── */}
+        {!userRole && (
+          <div className="guest-cards grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mx-auto mb-4">
+            {/* Customer card */}
+            <div
+              className="choice-card group bg-white rounded-3xl p-8 text-left transition-all duration-300"
+              style={{
+                boxShadow: "0 4px 24px rgba(22,163,74,0.09)",
+                border: "1px solid rgba(187,247,208,0.6)",
+              }}
+            >
+              <div
+                className="w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg,#DCFCE7,#BBF7D0)",
+                }}
+              >
+                <ShoppingBag
+                  style={{ width: 28, height: 28, color: "#16A34A" }}
+                  className="group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+                I'm a Customer
+              </h3>
+              <p
+                style={{
+                  color: "#6B7280",
+                  textAlign: "center",
+                  marginBottom: 20,
+                  fontSize: 14,
+                }}
+              >
+                Browse products and try them virtually before purchasing
+              </p>
+              <ul className="space-y-2.5 mb-7">
+                {[
+                  "Virtual try-on experience",
+                  "Browse latest collections",
+                  "Wishlist & favorites",
+                ].map((f, i) => (
+                  <li key={i} className="flex items-center gap-2.5">
+                    <span
+                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "#DCFCE7" }}
+                    >
+                      <Check
+                        style={{ width: 11, height: 11, color: "#16A34A" }}
+                      />
+                    </span>
+                    <span style={{ fontSize: 14, color: "#374151" }}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/login"
+                className="cta-btn block text-center py-3.5 text-white font-semibold rounded-full"
+                style={{
+                  background: "linear-gradient(135deg,#16A34A,#10B981)",
+                  boxShadow: "0 4px 14px rgba(22,163,74,0.30)",
+                  textDecoration: "none",
+                }}
+              >
+                Start Shopping
+              </Link>
+            </div>
+
+            {/* Seller card */}
+            <div
+              className="choice-card group bg-white rounded-3xl p-8 text-left transition-all duration-300"
+              style={{
+                boxShadow: "0 4px 24px rgba(5,150,105,0.09)",
+                border: "1px solid rgba(167,243,208,0.6)",
+              }}
+            >
+              <div
+                className="w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg,#BBF7D0,#A7F3D0)",
+                }}
+              >
+                <Store
+                  style={{ width: 28, height: 28, color: "#059669" }}
+                  className="group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+                I'm a Seller
+              </h3>
+              <p
+                style={{
+                  color: "#6B7280",
+                  textAlign: "center",
+                  marginBottom: 20,
+                  fontSize: 14,
+                }}
+              >
+                Showcase your products with virtual try-on technology
+              </p>
+              <ul className="space-y-2.5 mb-7">
+                {[
+                  "Upload product catalog",
+                  "Manage inventory",
+                  "Track analytics",
+                ].map((f, i) => (
+                  <li key={i} className="flex items-center gap-2.5">
+                    <span
+                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "#D1FAE5" }}
+                    >
+                      <Check
+                        style={{ width: 11, height: 11, color: "#059669" }}
+                      />
+                    </span>
+                    <span style={{ fontSize: 14, color: "#374151" }}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/login"
+                className="cta-btn block text-center py-3.5 text-white font-semibold rounded-full"
+                style={{
+                  background: "linear-gradient(135deg,#059669,#10B981)",
+                  boxShadow: "0 4px 14px rgba(5,150,105,0.30)",
+                  textDecoration: "none",
+                }}
+              >
+                Start Selling
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* Features Section */}
-      <section className="relative py-20 px-4">
+      {/* ═══════════════ FEATURES ═══════════════ */}
+      <section className="relative py-24 px-4" style={{ zIndex: 1 }}>
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl h-15.5 font-bold text-center mb-16 bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Why Choose Try-on?
-          </h2>
+          <div className="text-center mb-16">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold mb-4"
+              style={{
+                background: "#F0FDF4",
+                border: "1px solid #BBF7D0",
+                color: "#15803D",
+              }}
+            >
+              <Zap style={{ width: 14, height: 14 }} /> Why Choose Us
+            </span>
+            <h2
+              className="font-bold"
+              style={{
+                fontSize: "clamp(32px,5vw,48px)",
+                background: "linear-gradient(135deg,#15803D,#059669)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Why Choose Try-on?
+            </h2>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 icon: Zap,
                 title: "AI-Powered",
-                description:
-                  "Advanced AI technology for realistic virtual try-on experience",
-                color: "purple",
+                desc: "Advanced AI technology for realistic virtual try-on experience",
+                grad: ["#DCFCE7", "#BBF7D0"],
+                iconCol: "#16A34A",
               },
               {
                 icon: Shield,
                 title: "Secure & Private",
-                description:
-                  "Your data is encrypted and protected with industry-leading security",
-                color: "pink",
+                desc: "Your data is encrypted and protected with industry-leading security",
+                grad: ["#D1FAE5", "#A7F3D0"],
+                iconCol: "#059669",
               },
               {
                 icon: TrendingUp,
                 title: "Growing Marketplace",
-                description:
-                  "Join thousands of sellers and millions of satisfied customers",
-                color: "purple",
+                desc: "Join thousands of sellers and millions of satisfied customers",
+                grad: ["#ECFDF5", "#DCFCE7"],
+                iconCol: "#10B981",
               },
               {
                 icon: Heart,
                 title: "Customer Focused",
-                description: "Built with love for the best shopping experience",
-                color: "pink",
+                desc: "Built with love for the best shopping experience",
+                grad: ["#F0FDF4", "#DCFCE7"],
+                iconCol: "#16A34A",
               },
-            ].map((feature, index) => (
+            ].map((f, i) => (
               <div
-                key={index}
-                className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                key={i}
+                className="feature-card bg-white rounded-2xl p-6 transition-all duration-300"
+                style={{
+                  boxShadow: "0 2px 16px rgba(22,163,74,0.07)",
+                  border: "1px solid rgba(187,247,208,0.5)",
+                }}
               >
                 <div
-                  className={`w-14 h-14 bg-linear-to-br from-${feature.color}-100 to-${feature.color === "purple" ? "pink" : "purple"}-100 rounded-full flex items-center justify-center mb-4`}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                  style={{
+                    background: `linear-gradient(135deg,${f.grad[0]},${f.grad[1]})`,
+                  }}
                 >
-                  <feature.icon
-                    className={`w-7 h-7 text-${feature.color}-600`}
-                  />
+                  <f.icon style={{ width: 26, height: 26, color: f.iconCol }} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {feature.title}
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
+                  {f.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="relative py-20 px-4 bg-white/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            {[
-              { icon: Users, value: "50K+", label: "Happy Customers" },
-              { icon: Store, value: "2K+", label: "Active Sellers" },
-              { icon: Package, value: "100K+", label: "Products Listed" },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-lg"
-              >
-                <div className="w-16 h-16 bg-linear-to-br from-purple-100 to-pink-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <stat.icon className="w-8 h-8 text-purple-600" />
-                </div>
-                <p className="text-5xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-                  {stat.value}
+                <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.6 }}>
+                  {f.desc}
                 </p>
-                <p className="text-gray-600 font-medium">{stat.label}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-3xl p-12 shadow-2xl">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl text-white/90 mb-8">
-              Join thousands of users experiencing the future of fashion today
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/signup"
-                className="px-8 py-4 bg-white text-purple-600 font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                Sign Up Now
-              </Link>
-              <Link
-                to="/terms"
-                className="px-8 py-4 bg-white/20 backdrop-blur-lg text-white font-semibold rounded-full border-2 border-white hover:bg-white/30 transform hover:scale-105 transition-all duration-200"
-              >
-                Learn More
-              </Link>
-            </div>
           </div>
         </div>
       </section>
@@ -342,182 +512,57 @@ const UnifiedHomePage = () => {
       <Footer />
 
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        .hp-root * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* Blobs */
+        .blob { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; }
+        .blob-tl { top:-60px; left:-60px; width:480px; height:480px;
+          background:radial-gradient(circle,rgba(74,222,128,0.20),transparent 70%);
+          animation:blobFloat 12s ease-in-out infinite; }
+        .blob-br { bottom:-80px; right:-80px; width:520px; height:520px;
+          background:radial-gradient(circle,rgba(16,185,129,0.16),transparent 70%);
+          animation:blobFloat 14s ease-in-out infinite; animation-delay:-5s; }
+        .blob-c  { top:40%; left:50%; transform:translateX(-50%); width:360px; height:360px;
+          background:radial-gradient(circle,rgba(22,163,74,0.09),transparent 70%);
+          animation:blobCenter 16s ease-in-out infinite; animation-delay:-9s; }
+        @keyframes blobFloat  { 0%,100%{transform:translate(0,0)scale(1)} 50%{transform:translate(20px,-20px)scale(1.05)} }
+        @keyframes blobCenter { 0%,100%{transform:translateX(-50%)scale(1)} 50%{transform:translateX(calc(-50% + 20px))scale(1.06)} }
+
+        /* Loading spinner */
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Banner entrance */
+        .banner-wrap { animation: heroIn 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+        .banner-img  { animation: imgReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+        @keyframes imgReveal { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
+
+        /* Hero brand */
+        .hero-brand { animation: heroIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
+        @keyframes heroIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+        .role-card-wrap { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+        .guest-cards    { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        /* Card hovers */
+        .choice-card:hover  { transform:translateY(-4px); box-shadow:0 12px 40px rgba(22,163,74,0.14) !important; }
+        .feature-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(22,163,74,0.12) !important; }
+        .role-card:hover    { transform:translateY(-3px); box-shadow:0 12px 40px rgba(22,163,74,0.16) !important; }
+
+        /* CTA buttons */
+        .cta-btn { transition: all 0.2s ease; }
+        .cta-btn:hover  { transform:translateY(-2px); filter:brightness(1.07); box-shadow:0 8px 24px rgba(22,163,74,0.40) !important; }
+        .cta-btn:active { transform:scale(0.98); }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+          .banner-img { max-height: 220px; object-position: center; }
+          .logo-img   { max-width: 200px !important; }
         }
-        .animate-pulse { animation: pulse 4s ease-in-out infinite; }
-        .delay-1000 { animation-delay: 2s; }
-        .delay-2000 { animation-delay: 3s; }
-        
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fade-in 1s ease-out; }
-        .animate-fade-in-delay { animation: fade-in 1s ease-out 0.3s both; }
       `}</style>
     </div>
   );
 };
 
 export default UnifiedHomePage;
-
-// import React, { useEffect, useState } from "react";
-// import { Link } from "react-router-dom";
-// import { supabase } from "../services/supabaseClient";
-// import {
-//   ShoppingBag,
-//   Store,
-//   ArrowRight,
-//   Sparkles,
-//   TrendingUp,
-//   Users,
-//   Package,
-//   Heart,
-//   Shield,
-//   Zap,
-//   Check,
-// } from "lucide-react";
-// import Navbar from "../components/Navbar";
-// import Footer from "../components/Footer";
-
-// const UnifiedHomePage = () => {
-//   const [loading, setLoading] = useState(true);
-//   const [userRole, setUserRole] = useState(null); // 'customer' | 'seller' | null
-
-//   /* ---------- FETCH USER ROLE ---------- */
-//   useEffect(() => {
-//     let mounted = true;
-
-//     const loadUserRole = async () => {
-//       const {
-//         data: { user },
-//       } = await supabase.auth.getUser();
-
-//       // Guest user
-//       if (!user) {
-//         if (mounted) {
-//           setUserRole(null);
-//           setLoading(false);
-//         }
-//         return;
-//       }
-
-//       // Logged-in user → fetch role
-//       const { data, error } = await supabase
-//         .from("profiles")
-//         .select("role")
-//         .eq("id", user.id)
-//         .single();
-
-//       if (!error && mounted) {
-//         setUserRole(data?.role || null);
-//       }
-
-//       if (mounted) setLoading(false);
-//     };
-
-//     loadUserRole();
-
-//     return () => {
-//       mounted = false;
-//     };
-//   }, []);
-
-//   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-
-//   return (
-//     <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-purple-50">
-//       {/* HERO SECTION */}
-//       <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-//         <div className="text-center max-w-5xl mx-auto">
-//           <div className="mb-10">
-//             <div className="w-24 h-24 bg-linear-to-br from-purple-600 to-pink-600 rounded-full mx-auto mb-6 flex items-center justify-center">
-//               <Sparkles className="w-12 h-12 text-white" />
-//             </div>
-
-//             <h1 className="text-7xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-//               Try-on
-//             </h1>
-
-//             <p className="text-xl text-gray-600 mt-4">
-//               Virtual Outfit Try-On Web Application
-//             </p>
-//           </div>
-
-//           {/* ================= ROLE BASED VIEW ================= */}
-
-//           {/* CUSTOMER VIEW */}
-//           {userRole === "customer" && (
-//             <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl max-w-md mx-auto">
-//               <ShoppingBag className="w-14 h-14 text-purple-600 mx-auto mb-4" />
-//               <h3 className="text-2xl font-bold mb-2">Welcome, Customer</h3>
-//               <p className="text-gray-600 mb-6">
-//                 Continue exploring and trying outfits virtually
-//               </p>
-
-//               <Link
-//                 to="/customer/home"
-//                 className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-full"
-//               >
-//                 Go to Shopping
-//                 <ArrowRight />
-//               </Link>
-//             </div>
-//           )}
-
-//           {/* SELLER VIEW */}
-//           {userRole === "seller" && (
-//             <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl max-w-md mx-auto">
-//               <Store className="w-14 h-14 text-pink-600 mx-auto mb-4" />
-//               <h3 className="text-2xl font-bold mb-2">Welcome, Seller</h3>
-//               <p className="text-gray-600 mb-6">
-//                 Manage your products and track performance
-//               </p>
-
-//               <Link
-//                 to="/seller/dashboard"
-//                 className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-pink-600 to-purple-600 text-white font-semibold rounded-full"
-//               >
-//                 Go to Dashboard
-//                 <ArrowRight />
-//               </Link>
-//             </div>
-//           )}
-
-//           {/* GUEST VIEW */}
-//           {!userRole && (
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-//               {/* CUSTOMER CARD */}
-//               <Link
-//                 to="/login"
-//                 className="bg-white/80 rounded-3xl p-8 shadow-xl hover:scale-105 transition"
-//               >
-//                 <ShoppingBag className="w-10 h-10 text-purple-600 mx-auto mb-4" />
-//                 <h3 className="text-xl font-bold">I’m a Customer</h3>
-//                 <p className="text-gray-600 mt-2">
-//                   Try outfits virtually before buying
-//                 </p>
-//               </Link>
-
-//               {/* SELLER CARD */}
-//               <Link
-//                 to="/login"
-//                 className="bg-white/80 rounded-3xl p-8 shadow-xl hover:scale-105 transition"
-//               >
-//                 <Store className="w-10 h-10 text-pink-600 mx-auto mb-4" />
-//                 <h3 className="text-xl font-bold">I’m a Seller</h3>
-//                 <p className="text-gray-600 mt-2">
-//                   Upload and manage your outfits
-//                 </p>
-//               </Link>
-//             </div>
-//           )}
-//         </div>
-//       </section>
-//     </div>
-//   );
-// };
-
-// export default UnifiedHomePage;

@@ -15,7 +15,7 @@ const BackButtonByRole = () => {
       return;
     }
 
-    // 🔹 Fetch role from profiles table
+    // Fetch role from profiles table
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("role")
@@ -28,7 +28,7 @@ const BackButtonByRole = () => {
       return;
     }
 
-    // 🔹 Role-based navigation
+    // Role-based navigation
     if (profile.role === "seller") {
       navigate("/my-items");
     } else if (profile.role === "customer") {
@@ -39,13 +39,43 @@ const BackButtonByRole = () => {
   };
 
   return (
-    <button
-      onClick={handleBack}
-      className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 cursor-pointer font-medium mb-8 transition-colors"
-    >
-      <ArrowLeft className="w-4 h-4" />
-      Back to Dashboard
-    </button>
+    <>
+      <button
+        onClick={handleBack}
+        className="back-btn-role inline-flex items-center gap-2 font-medium mb-8 cursor-pointer transition-all group"
+        style={{
+          color: "#16A34A",
+          background: "none",
+          border: "none",
+          padding: 0,
+        }}
+      >
+        <span
+          className="arrow-wrap w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-200"
+          style={{
+            background: "#fff",
+            borderColor: "#BBF7D0",
+            boxShadow: "0 1px 4px rgba(22,163,74,0.10)",
+          }}
+        >
+          <ArrowLeft style={{ width: 14, height: 14 }} />
+        </span>
+        Back to Dashboard
+      </button>
+
+      <style>{`
+        .back-btn-role:hover { color: #15803D; }
+        .back-btn-role:hover .arrow-wrap {
+          background: #16A34A !important;
+          border-color: #16A34A !important;
+          color: white;
+          box-shadow: 0 4px 12px rgba(22,163,74,0.28) !important;
+        }
+        .back-btn-role:active .arrow-wrap {
+          transform: scale(0.94);
+        }
+      `}</style>
+    </>
   );
 };
 

@@ -34,7 +34,6 @@ const Settings = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [userId, setUserId] = useState(null);
 
-  // Profile Settings
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -44,8 +43,6 @@ const Settings = () => {
     date_of_birth: "",
     gender: "",
   });
-
-  // Address Settings
   const [addresses, setAddresses] = useState([]);
   const [newAddress, setNewAddress] = useState({
     label: "Home",
@@ -56,16 +53,12 @@ const Settings = () => {
     country: "",
     is_default: false,
   });
-
-  // Security Settings
   const [security, setSecurity] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
     twoFactorEnabled: false,
   });
-
-  // Notification Settings
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     orderUpdates: true,
@@ -74,8 +67,6 @@ const Settings = () => {
     smsNotifications: false,
     pushNotifications: true,
   });
-
-  // Preferences
   const [preferences, setPreferences] = useState({
     language: "en",
     currency: "USD",
@@ -97,23 +88,17 @@ const Settings = () => {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
-
       if (userError || !user) {
-        console.error("User not found:", userError);
         navigate("/login");
         return;
       }
-
       setUserId(user.id);
-
-      // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
-
-      if (profileData) {
+      if (profileData)
         setProfile({
           name: profileData.name || "",
           email: profileData.email || user.email || "",
@@ -123,21 +108,14 @@ const Settings = () => {
           date_of_birth: profileData.date_of_birth || "",
           gender: profileData.gender || "",
         });
-      }
-
       console.log("Error", profileError);
-
-      // Fetch addresses
       const { data: addressData } = await supabase
         .from("addresses")
         .select("*")
         .eq("user_id", user.id);
-
-      if (addressData) {
-        setAddresses(addressData);
-      }
+      if (addressData) setAddresses(addressData);
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -147,7 +125,6 @@ const Settings = () => {
     e.preventDefault();
     setSaving(true);
     setMessage({ type: "", text: "" });
-
     try {
       const { error } = await supabase
         .from("profiles")
@@ -160,19 +137,14 @@ const Settings = () => {
           avatar_url: profile.avatar_url,
         })
         .eq("id", userId);
-
       if (error) throw error;
-
-      setMessage({
-        type: "success",
-        text: "Profile updated successfully!",
-      });
+      setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (error) {
-      console.error("Error updating profile:", error);
       setMessage({
         type: "error",
         text: "Failed to update profile. Please try again.",
       });
+      console.log(error);
     } finally {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -183,16 +155,11 @@ const Settings = () => {
     e.preventDefault();
     setSaving(true);
     setMessage({ type: "", text: "" });
-
     if (security.newPassword !== security.confirmPassword) {
-      setMessage({
-        type: "error",
-        text: "Passwords do not match!",
-      });
+      setMessage({ type: "error", text: "Passwords do not match!" });
       setSaving(false);
       return;
     }
-
     if (security.newPassword.length < 6) {
       setMessage({
         type: "error",
@@ -201,18 +168,12 @@ const Settings = () => {
       setSaving(false);
       return;
     }
-
     try {
       const { error } = await supabase.auth.updateUser({
         password: security.newPassword,
       });
-
       if (error) throw error;
-
-      setMessage({
-        type: "success",
-        text: "Password changed successfully!",
-      });
+      setMessage({ type: "success", text: "Password changed successfully!" });
       setSecurity({
         currentPassword: "",
         newPassword: "",
@@ -220,11 +181,11 @@ const Settings = () => {
         twoFactorEnabled: security.twoFactorEnabled,
       });
     } catch (error) {
-      console.error("Error changing password:", error);
       setMessage({
         type: "error",
         text: "Failed to change password. Please try again.",
       });
+      console.log(error);
     } finally {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -235,27 +196,18 @@ const Settings = () => {
     e.preventDefault();
     setSaving(true);
     setMessage({ type: "", text: "" });
-
     try {
-      // If this is the default address, unset other defaults
-      if (newAddress.is_default) {
+      if (newAddress.is_default)
         await supabase
           .from("addresses")
           .update({ is_default: false })
           .eq("user_id", userId);
-      }
-
       const { data, error } = await supabase
         .from("addresses")
-        .insert({
-          user_id: userId,
-          ...newAddress,
-        })
+        .insert({ user_id: userId, ...newAddress })
         .select()
         .single();
-
       if (error) throw error;
-
       setAddresses([...addresses, data]);
       setNewAddress({
         label: "Home",
@@ -266,16 +218,13 @@ const Settings = () => {
         country: "",
         is_default: false,
       });
-      setMessage({
-        type: "success",
-        text: "Address added successfully!",
-      });
+      setMessage({ type: "success", text: "Address added successfully!" });
     } catch (error) {
-      console.error("Error adding address:", error);
       setMessage({
         type: "error",
         text: "Failed to add address. Please try again.",
       });
+      console.log(error);
     } finally {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -285,26 +234,17 @@ const Settings = () => {
   const handleDeleteAddress = async (addressId) => {
     if (!window.confirm("Are you sure you want to delete this address?"))
       return;
-
     try {
       const { error } = await supabase
         .from("addresses")
         .delete()
         .eq("id", addressId);
-
       if (error) throw error;
-
-      setAddresses(addresses.filter((addr) => addr.id !== addressId));
-      setMessage({
-        type: "success",
-        text: "Address deleted successfully!",
-      });
+      setAddresses(addresses.filter((a) => a.id !== addressId));
+      setMessage({ type: "success", text: "Address deleted successfully!" });
     } catch (error) {
-      console.error("Error deleting address:", error);
-      setMessage({
-        type: "error",
-        text: "Failed to delete address. Please try again.",
-      });
+      setMessage({ type: "error", text: "Failed to delete address." });
+      console.log(error);
     } finally {
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     }
@@ -313,25 +253,18 @@ const Settings = () => {
   const handleNotificationUpdate = async () => {
     setSaving(true);
     setMessage({ type: "", text: "" });
-
     try {
-      // Store notification preferences in user metadata or separate table
       const { error } = await supabase.auth.updateUser({
         data: { notification_preferences: notifications },
       });
-
       if (error) throw error;
-
       setMessage({
         type: "success",
         text: "Notification preferences updated!",
       });
     } catch (error) {
-      console.error("Error updating notifications:", error);
-      setMessage({
-        type: "error",
-        text: "Failed to update preferences. Please try again.",
-      });
+      setMessage({ type: "error", text: "Failed to update preferences." });
+      console.log(error);
     } finally {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -341,24 +274,18 @@ const Settings = () => {
   const handlePreferencesUpdate = async () => {
     setSaving(true);
     setMessage({ type: "", text: "" });
-
     try {
       const { error } = await supabase.auth.updateUser({
-        data: { preferences: preferences },
+        data: { preferences },
       });
-
       if (error) throw error;
-
       setMessage({
         type: "success",
         text: "Preferences updated successfully!",
       });
     } catch (error) {
-      console.error("Error updating preferences:", error);
-      setMessage({
-        type: "error",
-        text: "Failed to update preferences. Please try again.",
-      });
+      setMessage({ type: "error", text: "Failed to update preferences." });
+      console.log(error);
     } finally {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -368,43 +295,27 @@ const Settings = () => {
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       setSaving(true);
-
       const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
+      const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("profiles")
         .upload(filePath, file);
-
       if (uploadError) throw uploadError;
-
       const {
         data: { publicUrl },
       } = supabase.storage.from("profiles").getPublicUrl(filePath);
-
       setProfile({ ...profile, avatar_url: publicUrl });
-
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: publicUrl })
         .eq("id", userId);
-
       if (updateError) throw updateError;
-
-      setMessage({
-        type: "success",
-        text: "Avatar updated successfully!",
-      });
+      setMessage({ type: "success", text: "Avatar updated successfully!" });
     } catch (error) {
-      console.error("Error uploading avatar:", error);
-      setMessage({
-        type: "error",
-        text: "Failed to upload avatar. Please try again.",
-      });
+      setMessage({ type: "error", text: "Failed to upload avatar." });
+      console.log(error);
     } finally {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -418,19 +329,17 @@ const Settings = () => {
       )
     )
       return;
-
     try {
       setSaving(true);
-      // You would typically call an edge function or API endpoint to handle account deletion
       alert(
         "Account deletion requested. Please contact support to complete this process.",
       );
     } catch (error) {
-      console.error("Error deleting account:", error);
       setMessage({
         type: "error",
         text: "Failed to delete account. Please contact support.",
       });
+      console.log(error);
     } finally {
       setSaving(false);
     }
@@ -444,114 +353,160 @@ const Settings = () => {
     { id: "preferences", label: "Preferences", icon: Globe },
   ];
 
+  // Reusable input class
+  const inputCls =
+    "w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none transition-all text-gray-800 placeholder-gray-400";
+  const labelCls = "block text-sm font-medium text-gray-700 mb-1.5";
+
+  // Reusable save button
+  const SaveBtn = ({ label = "Save Changes", onClick }) => (
+    <button
+      type={onClick ? "button" : "submit"}
+      onClick={onClick}
+      disabled={saving}
+      className="w-full py-3 px-4 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 shadow-sm shadow-green-200 hover:shadow-md hover:shadow-green-300 transition-all disabled:opacity-50 active:scale-[0.98]"
+      style={{ background: "linear-gradient(135deg, #16a34a, #059669)" }}
+    >
+      {saving ? (
+        <>
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span>Saving…</span>
+        </>
+      ) : (
+        <>
+          <Save className="w-4 h-4" />
+          <span>{label}</span>
+        </>
+      )}
+    </button>
+  );
+
+  // Toggle switch component
+  const Toggle = ({ checked, onChange }) => (
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only peer"
+      />
+      <div className="w-10 h-5 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-green-400/40 peer-checked:bg-green-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 after:border after:border-gray-200" />
+    </label>
+  );
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Settings
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Manage your account settings and preferences
-              </p>
-            </div>
-            <Link
-              to="/customer/dashboard"
-              className="px-4 py-2 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center space-x-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Dashboard</span>
-            </Link>
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Sticky Header */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              Settings
+            </h1>
+            <p className="text-sm text-gray-400 mt-0.5">
+              Manage your account settings and preferences
+            </p>
           </div>
+          <Link
+            to="/customer/dashboard"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm shadow-green-200 hover:shadow-md hover:shadow-green-300 transition-all"
+            style={{ background: "linear-gradient(135deg, #16a34a, #059669)" }}
+          >
+            <ArrowLeft className="w-4 h-4" /> Dashboard
+          </Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
         {/* Message Alert */}
         {message.text && (
           <div
-            className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${
-              message.type === "success"
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : "bg-red-50 text-red-700 border border-red-200"
-            }`}
+            className={`mb-5 p-3.5 rounded-xl flex items-center gap-3 text-sm font-medium border ${message.type === "success" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}
           >
             {message.type === "success" ? (
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle className="w-4 h-4 shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
             )}
-            <span className="font-medium">{message.text}</span>
-            <button
-              onClick={() => setMessage({ type: "", text: "" })}
-              className="ml-auto"
-            >
-              <X className="w-5 h-5" />
+            <span className="flex-1">{message.text}</span>
+            <button onClick={() => setMessage({ type: "", text: "" })}>
+              <X className="w-4 h-4 opacity-60 hover:opacity-100" />
             </button>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Navigation */}
+          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-4 sticky top-24">
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sticky top-24">
               <nav className="space-y-1">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       activeTab === tab.id
-                        ? "bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                        : "text-gray-700 hover:bg-purple-50"
+                        ? "text-white shadow-sm"
+                        : "text-gray-600 hover:bg-green-50 hover:text-green-700"
                     }`}
+                    style={
+                      activeTab === tab.id
+                        ? {
+                            background:
+                              "linear-gradient(135deg, #16a34a, #059669)",
+                          }
+                        : {}
+                    }
                   >
-                    <tab.icon className="w-5 h-5" />
-                    <span className="font-medium">{tab.label}</span>
+                    <tab.icon className="w-4 h-4 shrink-0" />
+                    {tab.label}
                   </button>
                 ))}
               </nav>
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Panel */}
           <div className="lg:col-span-3">
             {loading ? (
-              <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading settings...</p>
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-12 text-center">
+                <div className="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-sm text-gray-500">Loading settings…</p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                {/* Profile Settings */}
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 sm:p-8">
+                {/* ── PROFILE ── */}
                 {activeTab === "profile" && (
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-6">
                       Profile Information
                     </h2>
-                    <form onSubmit={handleProfileUpdate} className="space-y-6">
-                      {/* Avatar Upload */}
-                      <div className="flex items-center space-x-6">
-                        <div className="relative">
+                    <form onSubmit={handleProfileUpdate} className="space-y-5">
+                      {/* Avatar */}
+                      <div className="flex items-center gap-5">
+                        <div className="relative shrink-0">
                           {profile.avatar_url ? (
                             <img
                               src={profile.avatar_url}
                               alt="Avatar"
-                              className="w-24 h-24 rounded-full object-cover border-4 border-purple-200"
+                              className="w-20 h-20 rounded-2xl object-cover border-2 border-green-100"
                             />
                           ) : (
-                            <div className="w-24 h-24 rounded-full bg-linear-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-3xl font-bold">
+                            <div
+                              className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-bold"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, #16a34a, #059669)",
+                              }}
+                            >
                               {profile.name?.[0]?.toUpperCase() || "U"}
                             </div>
                           )}
                           <label
                             htmlFor="avatar-upload"
-                            className="absolute bottom-0 right-0 p-2 bg-purple-600 rounded-full text-white cursor-pointer hover:bg-purple-700 transition-all"
+                            className="absolute -bottom-1.5 -right-1.5 p-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-white cursor-pointer transition-colors shadow-sm"
                           >
-                            <Camera className="w-4 h-4" />
+                            <Camera className="w-3.5 h-3.5" />
                             <input
                               id="avatar-upload"
                               type="file"
@@ -562,60 +517,51 @@ const Settings = () => {
                           </label>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-800">
                             Profile Picture
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            JPG, PNG or GIF, max 5MB
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            JPG, PNG or GIF · max 5MB
                           </p>
                         </div>
                       </div>
 
-                      {/* Form Fields */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Full Name
-                          </label>
+                          <label className={labelCls}>Full Name</label>
                           <input
                             type="text"
                             value={profile.name}
                             onChange={(e) =>
                               setProfile({ ...profile, name: e.target.value })
                             }
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className={inputCls}
                             placeholder="John Doe"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Email
-                          </label>
+                          <label className={labelCls}>Email</label>
                           <input
                             type="email"
                             value={profile.email}
                             disabled
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 cursor-not-allowed"
+                            className={`${inputCls} cursor-not-allowed opacity-60`}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Phone Number
-                          </label>
+                          <label className={labelCls}>Phone Number</label>
                           <input
                             type="tel"
                             value={profile.phone}
                             onChange={(e) =>
                               setProfile({ ...profile, phone: e.target.value })
                             }
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className={inputCls}
                             placeholder="+1 (555) 123-4567"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Date of Birth
-                          </label>
+                          <label className={labelCls}>Date of Birth</label>
                           <input
                             type="date"
                             value={profile.date_of_birth}
@@ -625,19 +571,17 @@ const Settings = () => {
                                 date_of_birth: e.target.value,
                               })
                             }
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className={inputCls}
                           />
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Gender
-                          </label>
+                        <div className="md:col-span-2">
+                          <label className={labelCls}>Gender</label>
                           <select
                             value={profile.gender}
                             onChange={(e) =>
                               setProfile({ ...profile, gender: e.target.value })
                             }
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className={inputCls}
                           >
                             <option value="">Select Gender</option>
                             <option value="male">Male</option>
@@ -651,54 +595,37 @@ const Settings = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bio
-                        </label>
+                        <label className={labelCls}>Bio</label>
                         <textarea
                           value={profile.bio}
                           onChange={(e) =>
                             setProfile({ ...profile, bio: e.target.value })
                           }
-                          rows={4}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                          placeholder="Tell us about yourself..."
+                          rows={3}
+                          className={inputCls}
+                          placeholder="Tell us about yourself…"
                         />
                       </div>
 
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="w-full py-3 px-4 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-                      >
-                        {saving ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                            <span>Saving...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Save className="w-5 h-5" />
-                            <span>Save Changes</span>
-                          </>
-                        )}
-                      </button>
+                      <SaveBtn />
                     </form>
                   </div>
                 )}
 
-                {/* Address Settings */}
+                {/* ── ADDRESSES ── */}
                 {activeTab === "addresses" && (
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-5">
                       Saved Addresses
                     </h2>
 
-                    {/* Existing Addresses */}
-                    <div className="space-y-4 mb-8">
+                    <div className="space-y-3 mb-7">
                       {addresses.length === 0 ? (
-                        <div className="text-center py-8 bg-gray-50 rounded-xl">
-                          <MapPin className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                          <p className="text-gray-600">
+                        <div className="text-center py-10 bg-gray-50 rounded-2xl">
+                          <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                            <MapPin className="w-6 h-6 text-green-500" />
+                          </div>
+                          <p className="text-sm text-gray-500">
                             No saved addresses yet
                           </p>
                         </div>
@@ -706,21 +633,21 @@ const Settings = () => {
                         addresses.map((address) => (
                           <div
                             key={address.id}
-                            className="p-4 border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all"
+                            className="p-4 border border-gray-100 rounded-2xl hover:border-green-200 transition-all bg-gray-50/50"
                           >
                             <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <span className="font-semibold text-gray-900">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <span className="text-sm font-semibold text-gray-900">
                                     {address.label}
                                   </span>
                                   {address.is_default && (
-                                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                                    <span className="px-2 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded-full border border-green-100">
                                       Default
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-500 leading-relaxed">
                                   {address.street}
                                   <br />
                                   {address.city}, {address.state} {address.zip}
@@ -730,9 +657,9 @@ const Settings = () => {
                               </div>
                               <button
                                 onClick={() => handleDeleteAddress(address.id)}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-all"
                               >
-                                <Trash2 className="w-5 h-5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
@@ -740,125 +667,85 @@ const Settings = () => {
                       )}
                     </div>
 
-                    {/* Add New Address Form */}
-                    <div className="border-t-2 border-gray-200 pt-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="border-t border-gray-100 pt-6">
+                      <h3 className="text-sm font-bold text-gray-800 mb-4">
                         Add New Address
                       </h3>
                       <form onSubmit={handleAddAddress} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Label
-                            </label>
-                            <select
-                              value={newAddress.label}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  label: e.target.value,
-                                })
-                              }
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            >
-                              <option value="Home">Home</option>
-                              <option value="Work">Work</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Street Address
-                            </label>
-                            <input
-                              type="text"
-                              value={newAddress.street}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  street: e.target.value,
-                                })
-                              }
-                              required
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                              placeholder="123 Main St"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              City
-                            </label>
-                            <input
-                              type="text"
-                              value={newAddress.city}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  city: e.target.value,
-                                })
-                              }
-                              required
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                              placeholder="New York"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              State/Province
-                            </label>
-                            <input
-                              type="text"
-                              value={newAddress.state}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  state: e.target.value,
-                                })
-                              }
-                              required
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                              placeholder="NY"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              ZIP/Postal Code
-                            </label>
-                            <input
-                              type="text"
-                              value={newAddress.zip}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  zip: e.target.value,
-                                })
-                              }
-                              required
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                              placeholder="10001"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Country
-                            </label>
-                            <input
-                              type="text"
-                              value={newAddress.country}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  country: e.target.value,
-                                })
-                              }
-                              required
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                              placeholder="United States"
-                            />
-                          </div>
+                          {[
+                            {
+                              label: "Label",
+                              key: "label",
+                              type: "select",
+                              options: ["Home", "Work", "Other"],
+                            },
+                            {
+                              label: "Street Address",
+                              key: "street",
+                              placeholder: "123 Main St",
+                            },
+                            {
+                              label: "City",
+                              key: "city",
+                              placeholder: "New York",
+                            },
+                            {
+                              label: "State / Province",
+                              key: "state",
+                              placeholder: "NY",
+                            },
+                            {
+                              label: "ZIP / Postal Code",
+                              key: "zip",
+                              placeholder: "10001",
+                            },
+                            {
+                              label: "Country",
+                              key: "country",
+                              placeholder: "United States",
+                            },
+                          ].map(
+                            ({ label, key, type, options, placeholder }) => (
+                              <div key={key}>
+                                <label className={labelCls}>{label}</label>
+                                {type === "select" ? (
+                                  <select
+                                    value={newAddress[key]}
+                                    onChange={(e) =>
+                                      setNewAddress({
+                                        ...newAddress,
+                                        [key]: e.target.value,
+                                      })
+                                    }
+                                    className={inputCls}
+                                  >
+                                    {options.map((o) => (
+                                      <option key={o} value={o}>
+                                        {o}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    required
+                                    value={newAddress[key]}
+                                    onChange={(e) =>
+                                      setNewAddress({
+                                        ...newAddress,
+                                        [key]: e.target.value,
+                                      })
+                                    }
+                                    className={inputCls}
+                                    placeholder={placeholder}
+                                  />
+                                )}
+                              </div>
+                            ),
+                          )}
                         </div>
-
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center gap-2.5">
                           <input
                             type="checkbox"
                             id="default-address"
@@ -869,48 +756,30 @@ const Settings = () => {
                                 is_default: e.target.checked,
                               })
                             }
-                            className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            className="w-4 h-4 rounded border-gray-300 accent-green-600 cursor-pointer"
                           />
                           <label
                             htmlFor="default-address"
-                            className="text-sm font-medium text-gray-700"
+                            className="text-sm font-medium text-gray-600 cursor-pointer"
                           >
                             Set as default address
                           </label>
                         </div>
-
-                        <button
-                          type="submit"
-                          disabled={saving}
-                          className="w-full py-3 px-4 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-                        >
-                          {saving ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              <span>Adding...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-5 h-5" />
-                              <span>Add Address</span>
-                            </>
-                          )}
-                        </button>
+                        <SaveBtn label="Add Address" />
                       </form>
                     </div>
                   </div>
                 )}
 
-                {/* Security Settings */}
+                {/* ── SECURITY ── */}
                 {activeTab === "security" && (
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-6">
                       Security Settings
                     </h2>
 
-                    {/* Change Password */}
-                    <div className="mb-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="mb-7">
+                      <h3 className="text-sm font-bold text-gray-800 mb-4">
                         Change Password
                       </h3>
                       <form
@@ -918,9 +787,7 @@ const Settings = () => {
                         className="space-y-4"
                       >
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            New Password
-                          </label>
+                          <label className={labelCls}>New Password</label>
                           <div className="relative">
                             <input
                               type={showPassword ? "text" : "password"}
@@ -932,24 +799,24 @@ const Settings = () => {
                                 })
                               }
                               required
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              className={`${inputCls} pr-11`}
                               placeholder="Enter new password"
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-600 transition-colors"
                             >
                               {showPassword ? (
-                                <EyeOff className="w-5 h-5" />
+                                <EyeOff className="w-4 h-4" />
                               ) : (
-                                <Eye className="w-5 h-5" />
+                                <Eye className="w-4 h-4" />
                               )}
                             </button>
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className={labelCls}>
                             Confirm New Password
                           </label>
                           <input
@@ -962,93 +829,74 @@ const Settings = () => {
                               })
                             }
                             required
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className={inputCls}
                             placeholder="Confirm new password"
                           />
                         </div>
-                        <button
-                          type="submit"
-                          disabled={saving}
-                          className="w-full py-3 px-4 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-                        >
-                          {saving ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              <span>Updating...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Lock className="w-5 h-5" />
-                              <span>Update Password</span>
-                            </>
-                          )}
-                        </button>
+                        <SaveBtn label="Update Password" />
                       </form>
                     </div>
 
-                    {/* Two-Factor Authentication */}
-                    <div className="border-t-2 border-gray-200 pt-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="border-t border-gray-100 pt-6 mb-7">
+                      <h3 className="text-sm font-bold text-gray-800 mb-3">
                         Two-Factor Authentication
                       </h3>
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div className="flex items-center space-x-3">
-                          <Shield className="w-6 h-6 text-purple-600" />
+                      <div className="flex items-center justify-between p-4 bg-green-50/50 border border-green-100 rounded-2xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
+                            <Shield
+                              className="w-4.5 h-4.5 text-green-700"
+                              style={{ width: "18px", height: "18px" }}
+                            />
+                          </div>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-sm font-semibold text-gray-800">
                               2FA Status
                             </p>
-                            <p className="text-sm text-gray-600">
-                              Add an extra layer of security to your account
+                            <p className="text-xs text-gray-400">
+                              Add an extra layer of security
                             </p>
                           </div>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={security.twoFactorEnabled}
-                            onChange={(e) =>
-                              setSecurity({
-                                ...security,
-                                twoFactorEnabled: e.target.checked,
-                              })
-                            }
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-linear-to-r peer-checked:from-purple-600 peer-checked:to-pink-600"></div>
-                        </label>
+                        <Toggle
+                          checked={security.twoFactorEnabled}
+                          onChange={(e) =>
+                            setSecurity({
+                              ...security,
+                              twoFactorEnabled: e.target.checked,
+                            })
+                          }
+                        />
                       </div>
                     </div>
 
-                    {/* Delete Account */}
-                    <div className="border-t-2 border-red-200 pt-6 mt-8">
-                      <h3 className="text-lg font-semibold text-red-600 mb-4">
+                    <div className="border-t border-red-100 pt-6">
+                      <h3 className="text-sm font-bold text-red-500 mb-3">
                         Danger Zone
                       </h3>
-                      <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                        <p className="text-sm text-red-700 mb-4">
+                      <div className="p-4 bg-red-50 border border-red-100 rounded-2xl">
+                        <p className="text-xs text-red-600 mb-4">
                           Once you delete your account, there is no going back.
                           Please be certain.
                         </p>
                         <button
                           onClick={handleDeleteAccount}
-                          className="px-6 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all flex items-center space-x-2"
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-all"
                         >
-                          <Trash2 className="w-5 h-5" />
-                          <span>Delete Account</span>
+                          <Trash2 className="w-4 h-4" /> Delete Account
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Notification Settings */}
+                {/* ── NOTIFICATIONS ── */}
                 {activeTab === "notifications" && (
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-5">
                       Notification Preferences
                     </h2>
-                    <div className="space-y-4">
+                    <div className="space-y-2.5">
                       {[
                         {
                           key: "emailNotifications",
@@ -1083,64 +931,46 @@ const Settings = () => {
                       ].map((item) => (
                         <div
                           key={item.key}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                          className="flex items-center justify-between p-4 bg-gray-50/80 border border-gray-100 rounded-2xl hover:border-green-100 transition-all"
                         >
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-sm font-semibold text-gray-800">
                               {item.label}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-xs text-gray-400 mt-0.5">
                               {item.description}
                             </p>
                           </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={notifications[item.key]}
-                              onChange={(e) =>
-                                setNotifications({
-                                  ...notifications,
-                                  [item.key]: e.target.checked,
-                                })
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-linear-to-r peer-checked:from-purple-600 peer-checked:to-pink-600"></div>
-                          </label>
+                          <Toggle
+                            checked={notifications[item.key]}
+                            onChange={(e) =>
+                              setNotifications({
+                                ...notifications,
+                                [item.key]: e.target.checked,
+                              })
+                            }
+                          />
                         </div>
                       ))}
                     </div>
-                    <button
-                      onClick={handleNotificationUpdate}
-                      disabled={saving}
-                      className="w-full mt-6 py-3 px-4 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-                    >
-                      {saving ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                          <span>Saving...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-5 h-5" />
-                          <span>Save Preferences</span>
-                        </>
-                      )}
-                    </button>
+                    <div className="mt-5">
+                      <SaveBtn
+                        label="Save Preferences"
+                        onClick={handleNotificationUpdate}
+                      />
+                    </div>
                   </div>
                 )}
 
-                {/* Preferences */}
+                {/* ── PREFERENCES ── */}
                 {activeTab === "preferences" && (
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-5">
                       App Preferences
                     </h2>
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Language
-                        </label>
+                        <label className={labelCls}>Language</label>
                         <select
                           value={preferences.language}
                           onChange={(e) =>
@@ -1149,7 +979,7 @@ const Settings = () => {
                               language: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className={inputCls}
                         >
                           <option value="en">English</option>
                           <option value="es">Spanish</option>
@@ -1158,11 +988,8 @@ const Settings = () => {
                           <option value="zh">Chinese</option>
                         </select>
                       </div>
-
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Currency
-                        </label>
+                        <label className={labelCls}>Currency</label>
                         <select
                           value={preferences.currency}
                           onChange={(e) =>
@@ -1171,7 +998,7 @@ const Settings = () => {
                               currency: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className={inputCls}
                         >
                           <option value="USD">USD ($)</option>
                           <option value="EUR">EUR (€)</option>
@@ -1180,47 +1007,45 @@ const Settings = () => {
                           <option value="INR">INR (₹)</option>
                         </select>
                       </div>
-
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Theme
-                        </label>
-                        <div className="grid grid-cols-3 gap-4">
-                          {["light", "dark", "auto"].map((theme) => (
+                        <label className={labelCls}>Theme</label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            {
+                              id: "light",
+                              icon: <Sun className="w-5 h-5 text-amber-500" />,
+                              label: "Light",
+                            },
+                            {
+                              id: "dark",
+                              icon: <Moon className="w-5 h-5 text-slate-600" />,
+                              label: "Dark",
+                            },
+                            {
+                              id: "auto",
+                              icon: (
+                                <Smartphone className="w-5 h-5 text-blue-500" />
+                              ),
+                              label: "Auto",
+                            },
+                          ].map(({ id, icon, label }) => (
                             <button
-                              key={theme}
+                              key={id}
                               onClick={() =>
-                                setPreferences({ ...preferences, theme })
+                                setPreferences({ ...preferences, theme: id })
                               }
-                              className={`p-4 rounded-xl border-2 transition-all ${
-                                preferences.theme === theme
-                                  ? "border-purple-600 bg-purple-50"
-                                  : "border-gray-200 hover:border-gray-300"
-                              }`}
+                              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${preferences.theme === id ? "border-green-500 bg-green-50/60" : "border-gray-200 hover:border-green-200 bg-white"}`}
                             >
-                              <div className="flex flex-col items-center space-y-2">
-                                {theme === "light" && (
-                                  <Sun className="w-6 h-6 text-yellow-500" />
-                                )}
-                                {theme === "dark" && (
-                                  <Moon className="w-6 h-6 text-purple-600" />
-                                )}
-                                {theme === "auto" && (
-                                  <Smartphone className="w-6 h-6 text-blue-600" />
-                                )}
-                                <span className="text-sm font-medium capitalize">
-                                  {theme}
-                                </span>
-                              </div>
+                              {icon}
+                              <span className="text-xs font-semibold text-gray-700 capitalize">
+                                {label}
+                              </span>
                             </button>
                           ))}
                         </div>
                       </div>
-
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Frequency
-                        </label>
+                        <label className={labelCls}>Email Frequency</label>
                         <select
                           value={preferences.emailFrequency}
                           onChange={(e) =>
@@ -1229,7 +1054,7 @@ const Settings = () => {
                               emailFrequency: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className={inputCls}
                         >
                           <option value="instant">Instant</option>
                           <option value="daily">Daily Digest</option>
@@ -1237,24 +1062,10 @@ const Settings = () => {
                           <option value="never">Never</option>
                         </select>
                       </div>
-
-                      <button
+                      <SaveBtn
+                        label="Save Preferences"
                         onClick={handlePreferencesUpdate}
-                        disabled={saving}
-                        className="w-full py-3 px-4 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-                      >
-                        {saving ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                            <span>Saving...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Save className="w-5 h-5" />
-                            <span>Save Preferences</span>
-                          </>
-                        )}
-                      </button>
+                      />
                     </div>
                   </div>
                 )}

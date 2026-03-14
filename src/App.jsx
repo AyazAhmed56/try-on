@@ -29,6 +29,7 @@ import ProductDetails from "./customer/ProductDetails";
 import AboutAndContact from "./pages/AboutAndContact";
 import TryOnPages from "./pages/TryOnPages";
 import VirtualTryOn from "./customer/VirtualTryOn";
+import AdminTryonUpload from "./admin/AdminTryonUpload";
 
 const App = () => {
   return (
@@ -66,6 +67,7 @@ const App = () => {
           <Route path="/order-receipt" element={<OrderReceipt />} />
 
           {/* admin */}
+          <Route path="/admin/upload" element={<AdminTryonUpload />} />
 
           {/* other */}
           <Route path="/login" element={<Login />} />
