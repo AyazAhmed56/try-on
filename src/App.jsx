@@ -30,6 +30,7 @@ import AboutAndContact from "./pages/AboutAndContact";
 import TryOnPages from "./pages/TryOnPages";
 import VirtualTryOn from "./customer/VirtualTryOn";
 import AdminTryonUpload from "./admin/AdminTryonUpload";
+import Checkout from "./customer/Checkout";
 
 const App = () => {
   return (
@@ -49,6 +50,7 @@ const App = () => {
           <Route path="/customer/orders" element={<MyOrders />} />
           <Route path="/customer/try-on/:id" element={<TryOnPages />} />
           <Route path="/customer/try-on" element={<VirtualTryOn />} />
+          <Route path="/customer/checkout" element={<Checkout />} />
 
           {/* seller */}
           <Route path="/seller/profile" element={<SellerProfile />} />

@@ -165,7 +165,7 @@ const ProductDetails = () => {
           `
     id,
     rating,
-    comment,
+    review,
     created_at,
     profiles(name)
   `,
@@ -181,7 +181,7 @@ const ProductDetails = () => {
           id: r.id,
           user: r.profiles?.name || "Anonymous",
           rating: r.rating,
-          comment: r.comment,
+          comment: r.review,
           date: r.created_at,
           verified: true,
         })),
@@ -296,6 +296,27 @@ const ProductDetails = () => {
       navigator.clipboard.writeText(window.location.href);
       alert("Link copied!");
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!userId) {
+      alert("Please log in first");
+      navigate("/login");
+      return;
+    }
+
+    if (!selectedSize) {
+      alert("Please select size");
+      return;
+    }
+
+    navigate("/customer/checkout", {
+      state: {
+        product,
+        quantity,
+        size: selectedSize,
+      },
+    });
   };
 
   const nextImage = () =>
@@ -592,6 +613,15 @@ const ProductDetails = () => {
                 className="w-full py-3.5 px-6 rounded-xl text-sm font-semibold border-2 border-green-600 text-green-700 bg-white hover:bg-green-50 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="w-4 h-4" /> Add to Cart
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="w-full py-3.5 px-6 rounded-xl text-sm font-semibold text-white"
+                style={{
+                  background: "linear-gradient(135deg,#15803d,#059669)",
+                }}
+              >
+                Buy Now
               </button>
             </div>
 

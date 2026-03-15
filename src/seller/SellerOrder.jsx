@@ -27,25 +27,59 @@ const SellerOrder = () => {
   useEffect(() => {
     const fetchSellerOrders = async () => {
       setLoading(true);
+
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser();
-      const { data, error } = await supabase
-        .from("orders")
-        .select(
-          `id, created_at, quantity, price, tax, shipping, discount, total_amount, status, delivery_date, payment_method, transaction_id, customer_name, customer_email, customer_phone, shipping_address, outfits(name, outfit_images(image_url, is_main))`,
-        )
-        .eq("seller_id", user.id)
-        .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
+      if (userError || !user) {
+        console.error("User not found", userError);
         setLoading(false);
         return;
       }
 
+      console.log("Seller auth id:", user.id);
+
+      const { data, error } = await supabase
+        .from("orders")
+        .select(
+          `
+        id,
+        created_at,
+        quantity,
+        price,
+        tax,
+        shipping,
+        discount,
+        total_amount,
+        status,
+        delivery_date,
+        payment_method,
+        transaction_id,
+        customer_name,
+        customer_email,
+        customer_phone,
+        shipping_address,
+        outfits (
+          name,
+          outfit_images (image_url, is_main)
+        )
+      `,
+        )
+        .eq("seller_id", user.id) // ✅ use auth user id
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Orders fetch error:", error);
+        setLoading(false);
+        return;
+      }
+
+      console.log("Seller Orders:", data);
+
       setOrders(
-        data.map((o) => ({
+        (data || []).map((o) => ({
           id: o.id,
           customer: o.customer_name,
           customerEmail: o.customer_email,
@@ -67,8 +101,10 @@ const SellerOrder = () => {
           transactionId: o.transaction_id,
         })),
       );
+
       setLoading(false);
     };
+
     fetchSellerOrders();
   }, []);
 

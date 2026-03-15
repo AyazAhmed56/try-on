@@ -176,8 +176,14 @@ const Cart = () => {
     else alert("Invalid coupon code");
   };
 
-  const proceedToCheckout = () => navigate("/customer/checkout");
-
+  const proceedToCheckout = () => {
+    navigate("/customer/checkout", {
+      state: {
+        cartItems,
+      },
+    });
+  };
+  
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
