@@ -147,7 +147,7 @@ const UnifiedHomePage = () => {
             <img
               src="/logo.jpg"
               alt="Try-on Logo"
-              className="logo-img mx-auto object-contain hover:scale-105 transition-transform duration-300"
+              className="logo-img mx-auto bg-[#f9fefa] object-contain hover:scale-105 transition-transform duration-300"
               style={{
                 maxWidth: 280,
                 width: "100%",

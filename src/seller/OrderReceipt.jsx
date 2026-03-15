@@ -12,6 +12,7 @@ import {
   CreditCard,
   CheckCircle,
   FileText,
+  Leaf,
 } from "lucide-react";
 import { supabase } from "../services/supabase";
 import html2pdf from "html2pdf.js";
@@ -24,11 +25,11 @@ const OrderReceipt = () => {
   const [error, setError] = useState(null);
   const receiptRef = useRef(null);
 
-  const statusColor = {
-    delivered: "bg-green-100 text-green-700",
-    shipped: "bg-blue-100 text-blue-700",
-    pending: "bg-yellow-100 text-yellow-700",
-    cancelled: "bg-red-100 text-red-700",
+  const statusStyles = {
+    delivered: { bg: "#DCFCE7", color: "#15803D", border: "#BBF7D0" },
+    shipped: { bg: "#DBEAFE", color: "#1D4ED8", border: "#BFDBFE" },
+    pending: { bg: "#FEF9C3", color: "#92400E", border: "#FDE68A" },
+    cancelled: { bg: "#FEE2E2", color: "#991B1B", border: "#FECACA" },
   };
 
   useEffect(() => {
@@ -36,7 +37,6 @@ const OrderReceipt = () => {
       try {
         setLoading(true);
         setError(null);
-
         if (!orderId) {
           setError("No order ID provided");
           setLoading(false);
@@ -46,110 +46,109 @@ const OrderReceipt = () => {
         const { data: orderData, error: orderError } = await supabase
           .from("orders")
           .select(
-            `
-            id,
-            created_at,
-            quantity,
-            price,
-            tax,
-            shipping,
-            discount,
-            total_amount,
-            status,
-            delivery_date,
-            payment_method,
-            transaction_id,
-            customer_name,
-            customer_email,
-            customer_phone,
-            shipping_address,
-            seller_id,
-            outfits (
-              name,
-              category,
-              outfit_images (
-                image_url,
-                is_main
-              )
-            )
-          `,
+            `id, created_at, quantity, price, tax, shipping, discount, total_amount,
+            status, delivery_date, payment_method, transaction_id,
+            customer_name, customer_email, customer_phone, shipping_address, seller_id,
+            outfits(name, category, outfit_images(image_url, is_main))`,
           )
           .eq("id", orderId)
           .single();
 
         if (orderError) {
-          console.error("Order fetch error:", orderError);
           setError("Order not found");
           setLoading(false);
           return;
         }
-
         setOrder(orderData);
 
-        // Fetch seller profile
         const { data: sellerData, error: sellerError } = await supabase
           .from("seller_profiles")
           .select("*")
           .eq("user_id", orderData.seller_id)
           .single();
-
-        if (!sellerError && sellerData) {
-          setSeller(sellerData);
-        }
-
+        if (!sellerError && sellerData) setSeller(sellerData);
         setLoading(false);
       } catch (err) {
-        console.error("Error:", err);
-        setError("Failed to load receipt");
+        setError("Failed to load receipt", err);
         setLoading(false);
       }
     };
-
     fetchOrderReceipt();
   }, [orderId]);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleDownload = () => {
+  const handlePrint = () => window.print();
+  const handleDownload = () =>
     html2pdf().from(receiptRef.current).save(`receipt-${order.id}.pdf`);
-  };
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading receipt...</p>
+      <div
+        className="or-root min-h-screen flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg,#F0FDF4,#fff,#ECFDF5)" }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg,#16A34A,#10B981)" }}
+          >
+            <div
+              className="w-10 h-10 rounded-full border-2 border-white/40 border-t-white"
+              style={{ animation: "spin 0.9s linear infinite" }}
+            />
+          </div>
+          <p style={{ color: "#16A34A", fontWeight: 600 }}>Loading receipt…</p>
         </div>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
-  }
 
-  if (error || !order) {
+  if (error || !order)
     return (
-      <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-12 shadow-lg text-center max-w-md">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+      <div
+        className="or-root min-h-screen flex items-center justify-center px-4"
+        style={{ background: "linear-gradient(135deg,#F0FDF4,#fff,#ECFDF5)" }}
+      >
+        <div
+          className="bg-white rounded-3xl p-12 text-center max-w-md"
+          style={{
+            boxShadow: "0 8px 40px rgba(22,163,74,0.10)",
+            border: "1px solid rgba(187,247,208,0.7)",
+          }}
+        >
+          <div
+            className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+            style={{ background: "#F0FDF4" }}
+          >
+            <FileText style={{ width: 28, height: 28, color: "#9CA3AF" }} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
             {error || "Order Not Found"}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p
+            style={{
+              color: "#6B7280",
+              fontSize: 14,
+              marginBottom: 24,
+              lineHeight: 1.6,
+            }}
+          >
             The order receipt could not be loaded. Please check the order ID and
             try again.
           </p>
           <Link
-            to="/order-list"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+            to="/customer/orders"
+            className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200"
+            style={{
+              background: "linear-gradient(135deg,#16A34A,#10B981)",
+              boxShadow: "0 4px 14px rgba(22,163,74,0.30)",
+              textDecoration: "none",
+            }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Orders
+            <ArrowLeft style={{ width: 16, height: 16 }} /> Back to Orders
           </Link>
         </div>
       </div>
     );
-  }
 
   const mainImage = order.outfits?.outfit_images?.find(
     (i) => i.is_main,
@@ -159,66 +158,158 @@ const OrderReceipt = () => {
   const shipping = order.shipping || 0;
   const discount = order.discount || 0;
   const total = order.total_amount || subtotal + tax + shipping - discount;
+  const statusStyle = statusStyles[order.status] || {
+    bg: "#F3F4F6",
+    color: "#374151",
+    border: "#E5E7EB",
+  };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-purple-50 py-12 px-4">
-      {/* Animated Background */}
+    <div
+      className="or-root min-h-screen py-12 px-4 relative overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(160deg,#F0FDF4 0%,#ffffff 45%,#ECFDF5 100%)",
+      }}
+    >
+      {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none print:hidden">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-300 rounded-full blur-3xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <svg
+          className="absolute inset-0 w-full h-full"
+          style={{ opacity: 0.025 }}
+        >
+          <defs>
+            <pattern
+              id="or-dots"
+              x="0"
+              y="0"
+              width="30"
+              height="30"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="2" cy="2" r="1.4" fill="#16A34A" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#or-dots)" />
+        </svg>
       </div>
 
       <div className="relative max-w-4xl mx-auto">
-        {/* Action Buttons - Hidden on print */}
+        {/* Action bar */}
         <div className="print:hidden mb-6 flex items-center justify-between flex-wrap gap-4">
           <Link
             to="/customer/orders"
-            className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium transition-colors"
+            className="back-btn inline-flex items-center gap-2 font-medium transition-all group"
+            style={{ color: "#16A34A", textDecoration: "none" }}
           >
-            <ArrowLeft className="w-4 h-4" />
+            <span
+              className="w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-200 group-hover:bg-green-600 group-hover:border-green-600"
+              style={{
+                background: "#fff",
+                borderColor: "#BBF7D0",
+                boxShadow: "0 1px 4px rgba(22,163,74,0.10)",
+              }}
+            >
+              <ArrowLeft
+                style={{ width: 14, height: 14 }}
+                className="group-hover:text-white transition-colors"
+              />
+            </span>
             Back to Orders
           </Link>
 
           <div className="flex gap-3">
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transform hover:scale-105 transition-all duration-200 shadow-md"
+              className="action-btn flex items-center gap-2 px-5 py-2.5 text-white font-semibold rounded-xl transition-all duration-200"
+              style={{
+                background: "linear-gradient(135deg,#16A34A,#10B981)",
+                boxShadow: "0 3px 12px rgba(22,163,74,0.28)",
+                fontSize: 14,
+              }}
             >
-              <Download className="w-4 h-4" />
-              Download
+              <Download style={{ width: 15, height: 15 }} /> Download
             </button>
             <button
               onClick={handlePrint}
-              className="flex items-center gap-2 px-6 py-3 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-700 transform hover:scale-105 transition-all duration-200 shadow-md"
+              className="action-btn flex items-center gap-2 px-5 py-2.5 font-semibold rounded-xl transition-all duration-200"
+              style={{
+                background: "#fff",
+                color: "#16A34A",
+                border: "1.5px solid #BBF7D0",
+                boxShadow: "0 2px 8px rgba(22,163,74,0.08)",
+                fontSize: 14,
+              }}
             >
-              <Printer className="w-4 h-4" />
-              Print
+              <Printer style={{ width: 15, height: 15 }} /> Print
             </button>
           </div>
         </div>
 
-        {/* Receipt */}
+        {/* ── RECEIPT CARD ── */}
         <div
           ref={receiptRef}
-          className="bg-white rounded-3xl shadow-2xl overflow-hidden print:shadow-none print:rounded-none"
+          className="receipt-card bg-white rounded-3xl overflow-hidden print:shadow-none print:rounded-none"
+          style={{
+            boxShadow:
+              "0 8px 48px rgba(22,163,74,0.11), 0 2px 8px rgba(0,0,0,0.05)",
+            border: "1px solid rgba(187,247,208,0.7)",
+          }}
         >
-          {/* Header */}
-          <div className="bg-linear-to-r from-purple-600 to-pink-600 p-8 text-white">
-            <div className="flex items-start justify-between flex-wrap gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold">ORDER RECEIPT</h1>
-                    <p className="text-white/90">Try-on Virtual Outfit Trial</p>
-                  </div>
+          {/* Header Banner */}
+          <div
+            className="relative overflow-hidden px-8 py-9"
+            style={{
+              background:
+                "linear-gradient(135deg,#15803D 0%,#16A34A 50%,#059669 100%)",
+            }}
+          >
+            <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 border border-white/10" />
+            <div className="absolute -bottom-14 -left-14 w-64 h-64 rounded-full bg-white/5 border border-white/10" />
+            <div
+              className="absolute top-0 left-0 right-0 h-0.5"
+              style={{
+                background:
+                  "linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)",
+                animation: "shimBar 2.5s linear infinite",
+              }}
+            />
+
+            <div className="relative flex items-start justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-13 h-13 rounded-2xl flex items-center justify-center"
+                  style={{
+                    width: 52,
+                    height: 52,
+                    background: "rgba(255,255,255,0.18)",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  <FileText style={{ width: 24, height: 24, color: "#fff" }} />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white tracking-tight">
+                    ORDER RECEIPT
+                  </h1>
+                  <p style={{ color: "#BBF7D0", fontSize: 13, marginTop: 2 }}>
+                    Try-on Virtual Outfit Trial
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-white/90 text-sm mb-1">Order ID</p>
-                <p className="text-xl font-bold break-all">{order.id}</p>
+                <p style={{ color: "#BBF7D0", fontSize: 12, marginBottom: 4 }}>
+                  Order ID
+                </p>
+                <p
+                  className="font-bold text-white break-all"
+                  style={{ fontSize: 15, maxWidth: 200 }}
+                >
+                  {order.id}
+                </p>
               </div>
             </div>
           </div>
@@ -226,11 +317,21 @@ const OrderReceipt = () => {
           {/* Body */}
           <div className="p-8">
             {/* Date & Status */}
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-200 flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-purple-600" />
+            <div
+              className="flex items-center justify-between mb-8 pb-6 flex-wrap gap-4"
+              style={{ borderBottom: "1px solid #F0FDF4" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: "#DCFCE7" }}
+                >
+                  <Calendar
+                    style={{ width: 18, height: 18, color: "#16A34A" }}
+                  />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-600">Order Date</p>
+                  <p style={{ fontSize: 12, color: "#9CA3AF" }}>Order Date</p>
                   <p className="font-semibold text-gray-800">
                     {new Date(order.created_at).toLocaleDateString("en-US", {
                       year: "numeric",
@@ -241,73 +342,128 @@ const OrderReceipt = () => {
                 </div>
               </div>
               <div
-                className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                  statusColor[order.status] || "bg-gray-100 text-gray-700"
-                }`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold"
+                style={{
+                  background: statusStyle.bg,
+                  color: statusStyle.color,
+                  border: `1px solid ${statusStyle.border}`,
+                  fontSize: 14,
+                }}
               >
-                {" "}
-                <CheckCircle className="w-5 h-5" />
-                <span className="font-semibold">
-                  {order.status || "Confirmed"}
-                </span>
+                <CheckCircle style={{ width: 15, height: 15 }} />
+                {(order.status || "Confirmed").charAt(0).toUpperCase() +
+                  (order.status || "Confirmed").slice(1)}
               </div>
             </div>
 
             {/* Seller & Customer Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              {/* Seller Info */}
-              <div className="bg-purple-50 rounded-xl p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Seller */}
+              <div
+                className="rounded-2xl p-5"
+                style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}
+              >
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-purple-600" />
+                  <Package
+                    style={{ width: 16, height: 16, color: "#16A34A" }}
+                  />{" "}
                   Seller Information
                 </h3>
-                <div className="space-y-2 text-sm">
-                  <p className="font-medium text-gray-800">
+                <div className="space-y-2">
+                  <p
+                    className="font-semibold text-gray-800"
+                    style={{ fontSize: 14 }}
+                  >
                     {seller?.shop_name || "Try-on Store"}
                   </p>
                   {seller?.shop_address && (
-                    <div className="flex items-start gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div
+                      className="flex items-start gap-2"
+                      style={{ fontSize: 13, color: "#4B5563" }}
+                    >
+                      <MapPin
+                        style={{
+                          width: 13,
+                          height: 13,
+                          marginTop: 2,
+                          flexShrink: 0,
+                          color: "#16A34A",
+                        }}
+                      />
                       <span>{seller.shop_address}</span>
                     </div>
                   )}
                   {seller?.phone_number_1 && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Phone className="w-4 h-4" />
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ fontSize: 13, color: "#4B5563" }}
+                    >
+                      <Phone
+                        style={{ width: 13, height: 13, color: "#16A34A" }}
+                      />
                       <span>{seller.phone_number_1}</span>
                     </div>
                   )}
                   {seller?.gst_number && (
-                    <p className="text-gray-600">GST: {seller.gst_number}</p>
+                    <p style={{ fontSize: 12, color: "#6B7280" }}>
+                      GST: {seller.gst_number}
+                    </p>
                   )}
                 </div>
               </div>
 
-              {/* Customer Info */}
-              <div className="bg-pink-50 rounded-xl p-6">
+              {/* Customer */}
+              <div
+                className="rounded-2xl p-5"
+                style={{ background: "#ECFDF5", border: "1px solid #A7F3D0" }}
+              >
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-pink-600" />
+                  <Mail style={{ width: 16, height: 16, color: "#059669" }} />{" "}
                   Customer Information
                 </h3>
-                <div className="space-y-2 text-sm">
-                  <p className="font-medium text-gray-800">
+                <div className="space-y-2">
+                  <p
+                    className="font-semibold text-gray-800"
+                    style={{ fontSize: 14 }}
+                  >
                     {order.customer_name || "Customer"}
                   </p>
                   {order.customer_email && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Mail className="w-4 h-4" />
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ fontSize: 13, color: "#4B5563" }}
+                    >
+                      <Mail
+                        style={{ width: 13, height: 13, color: "#059669" }}
+                      />
                       <span className="break-all">{order.customer_email}</span>
                     </div>
                   )}
                   {order.customer_phone && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Phone className="w-4 h-4" />
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ fontSize: 13, color: "#4B5563" }}
+                    >
+                      <Phone
+                        style={{ width: 13, height: 13, color: "#059669" }}
+                      />
                       <span>{order.customer_phone}</span>
                     </div>
                   )}
                   {order.shipping_address && (
-                    <div className="flex items-start gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div
+                      className="flex items-start gap-2"
+                      style={{ fontSize: 13, color: "#4B5563" }}
+                    >
+                      <MapPin
+                        style={{
+                          width: 13,
+                          height: 13,
+                          marginTop: 2,
+                          flexShrink: 0,
+                          color: "#059669",
+                        }}
+                      />
                       <span>{order.shipping_address}</span>
                     </div>
                   )}
@@ -315,59 +471,106 @@ const OrderReceipt = () => {
               </div>
             </div>
 
-            {/* Product Details */}
+            {/* Order Items Table */}
             <div className="mb-8">
-              <h3 className="font-semibold text-gray-800 mb-4 text-lg">
+              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <Package style={{ width: 16, height: 16, color: "#16A34A" }} />{" "}
                 Order Items
               </h3>
-              <div className="border border-gray-200 rounded-xl overflow-hidden overflow-x-auto">
-                <table className="w-full min-w-150">
+              <div
+                className="rounded-2xl overflow-hidden overflow-x-auto"
+                style={{ border: "1px solid #E5E7EB" }}
+              >
+                <table className="w-full" style={{ minWidth: 520 }}>
                   <thead>
-                    <tr className="bg-linear-to-r from-purple-50 to-pink-50">
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">
-                        Product
-                      </th>
-                      <th className="text-center py-4 px-6 font-semibold text-gray-700">
-                        Quantity
-                      </th>
-                      <th className="text-right py-4 px-6 font-semibold text-gray-700">
-                        Price
-                      </th>
-                      <th className="text-right py-4 px-6 font-semibold text-gray-700">
-                        Total
-                      </th>
+                    <tr
+                      style={{
+                        background: "linear-gradient(90deg,#F0FDF4,#ECFDF5)",
+                      }}
+                    >
+                      {["Product", "Qty", "Price", "Total"].map((h, i) => (
+                        <th
+                          key={i}
+                          className={
+                            i === 0
+                              ? "text-left"
+                              : i >= 2
+                                ? "text-right"
+                                : "text-center"
+                          }
+                          style={{
+                            padding: "14px 20px",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "#374151",
+                          }}
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-t border-gray-200">
-                      <td className="py-4 px-6">
+                    <tr style={{ borderTop: "1px solid #F0FDF4" }}>
+                      <td style={{ padding: "16px 20px" }}>
                         <div className="flex items-center gap-4">
                           {mainImage && (
                             <img
                               src={mainImage}
-                              alt={order.outfits?.name || "Product"}
-                              className="w-16 h-20 object-cover rounded-lg shrink-0"
+                              alt={order.outfits?.name}
+                              className="rounded-xl object-cover shrink-0"
+                              style={{ width: 56, height: 68 }}
                             />
                           )}
                           <div>
-                            <p className="font-semibold text-gray-800">
+                            <p
+                              className="font-semibold text-gray-800"
+                              style={{ fontSize: 14 }}
+                            >
                               {order.outfits?.name || "Product"}
                             </p>
                             {order.outfits?.category && (
-                              <p className="text-sm text-gray-600">
+                              <span
+                                className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                                style={{
+                                  background: "#DCFCE7",
+                                  color: "#15803D",
+                                }}
+                              >
                                 {order.outfits.category}
-                              </p>
+                              </span>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="text-center py-4 px-6 font-medium">
+                      <td
+                        className="text-center font-medium"
+                        style={{
+                          padding: "16px 20px",
+                          fontSize: 14,
+                          color: "#374151",
+                        }}
+                      >
                         {order.quantity || 1}
                       </td>
-                      <td className="text-right py-4 px-6 font-medium">
+                      <td
+                        className="text-right font-medium"
+                        style={{
+                          padding: "16px 20px",
+                          fontSize: 14,
+                          color: "#374151",
+                        }}
+                      >
                         ₹{(order.price || 0).toFixed(2)}
                       </td>
-                      <td className="text-right py-4 px-6 font-bold text-purple-600">
+                      <td
+                        className="text-right font-bold"
+                        style={{
+                          padding: "16px 20px",
+                          fontSize: 15,
+                          color: "#15803D",
+                        }}
+                      >
                         ₹{subtotal.toFixed(2)}
                       </td>
                     </tr>
@@ -377,34 +580,65 @@ const OrderReceipt = () => {
             </div>
 
             {/* Payment Summary */}
-            <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-xl p-6 mb-8">
-              <h3 className="font-semibold text-gray-800 mb-4 text-lg">
+            <div
+              className="rounded-2xl p-6 mb-8"
+              style={{
+                background: "linear-gradient(135deg,#F0FDF4,#ECFDF5)",
+                border: "1px solid #BBF7D0",
+              }}
+            >
+              <h3 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
+                <CreditCard
+                  style={{ width: 16, height: 16, color: "#16A34A" }}
+                />{" "}
                 Payment Summary
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Tax (GST)</span>
-                  <span className="font-medium">₹{tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Shipping</span>
-                  <span className="font-medium">₹{shipping.toFixed(2)}</span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span className="font-medium">-₹{discount.toFixed(2)}</span>
+                {[
+                  { label: "Subtotal", value: `₹${subtotal.toFixed(2)}` },
+                  { label: "Tax (GST)", value: `₹${tax.toFixed(2)}` },
+                  { label: "Shipping", value: `₹${shipping.toFixed(2)}` },
+                  ...(discount > 0
+                    ? [
+                        {
+                          label: "Discount",
+                          value: `-₹${discount.toFixed(2)}`,
+                          green: true,
+                        },
+                      ]
+                    : []),
+                ].map((row, i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between"
+                    style={{
+                      fontSize: 14,
+                      color: row.green ? "#16A34A" : "#4B5563",
+                    }}
+                  >
+                    <span>{row.label}</span>
+                    <span className="font-medium">{row.value}</span>
                   </div>
-                )}
-                <div className="border-t-2 border-purple-200 pt-3 flex justify-between">
-                  <span className="text-lg font-bold text-gray-800">
+                ))}
+                <div
+                  className="flex justify-between items-center pt-4"
+                  style={{ borderTop: "2px solid #BBF7D0" }}
+                >
+                  <span
+                    className="font-bold text-gray-800"
+                    style={{ fontSize: 17 }}
+                  >
                     Total Amount
                   </span>
-                  <span className="text-2xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontSize: 26,
+                      background: "linear-gradient(135deg,#15803D,#059669)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
                     ₹{total.toFixed(2)}
                   </span>
                 </div>
@@ -413,15 +647,33 @@ const OrderReceipt = () => {
 
             {/* Payment Method */}
             {order.payment_method && (
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-8">
-                <CreditCard className="w-5 h-5 text-gray-600" />
+              <div
+                className="flex items-center gap-3 rounded-2xl p-4 mb-8"
+                style={{ background: "#F9FAFB", border: "1px solid #E5E7EB" }}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: "#DCFCE7" }}
+                >
+                  <CreditCard
+                    style={{ width: 18, height: 18, color: "#16A34A" }}
+                  />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-600">Payment Method</p>
-                  <p className="font-semibold text-gray-800">
+                  <p style={{ fontSize: 12, color: "#9CA3AF" }}>
+                    Payment Method
+                  </p>
+                  <p
+                    className="font-semibold text-gray-800"
+                    style={{ fontSize: 14 }}
+                  >
                     {order.payment_method}
                   </p>
                   {order.transaction_id && (
-                    <p className="text-xs text-gray-500 break-all">
+                    <p
+                      className="break-all"
+                      style={{ fontSize: 11, color: "#9CA3AF" }}
+                    >
                       Transaction ID: {order.transaction_id}
                     </p>
                   )}
@@ -429,12 +681,18 @@ const OrderReceipt = () => {
               </div>
             )}
 
-            {/* Footer Note */}
-            <div className="text-center pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-2">
-                Thank you for your business!
-              </p>
-              <p className="text-xs text-gray-500">
+            {/* Footer */}
+            <div
+              className="text-center pt-6"
+              style={{ borderTop: "1px solid #F0FDF4" }}
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Leaf style={{ width: 14, height: 14, color: "#16A34A" }} />
+                <p style={{ fontSize: 14, color: "#4B5563", fontWeight: 500 }}>
+                  Thank you for your business!
+                </p>
+              </div>
+              <p style={{ fontSize: 12, color: "#9CA3AF" }}>
                 This is a computer-generated receipt and does not require a
                 signature.
               </p>
@@ -444,26 +702,35 @@ const OrderReceipt = () => {
       </div>
 
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.3; transform: scale(1.05); }
-        }
-        .animate-pulse { animation: pulse 4s ease-in-out infinite; }
-        .delay-1000 { animation-delay: 2s; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        .or-root * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .blob { position:absolute; border-radius:50%; filter:blur(88px); pointer-events:none; }
+        .blob-1 { top:-60px; left:-60px; width:440px; height:440px;
+          background:radial-gradient(circle,rgba(74,222,128,0.18),transparent 70%);
+          animation:orBlob 11s ease-in-out infinite; }
+        .blob-2 { bottom:-80px; right:-80px; width:480px; height:480px;
+          background:radial-gradient(circle,rgba(16,185,129,0.14),transparent 70%);
+          animation:orBlob 13s ease-in-out infinite; animation-delay:-5s; }
+        @keyframes orBlob { 0%,100%{transform:translate(0,0)scale(1)} 50%{transform:translate(16px,-16px)scale(1.04)} }
+
+        @keyframes spin    { to{transform:rotate(360deg)} }
+        @keyframes shimBar { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+
+        .receipt-card { animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        @keyframes cardIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        .back-btn { animation: fadeIn 0.3s ease both; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+        .action-btn:hover  { transform:translateY(-2px); filter:brightness(1.06); }
+        .action-btn:active { transform:scale(0.98); }
 
         @media print {
-          body {
-            background: white !important;
-          }
-          .print\\:hidden {
-            display: none !important;
-          }
-          .print\\:shadow-none {
-            box-shadow: none !important;
-          }
-          .print\\:rounded-none {
-            border-radius: 0 !important;
-          }
+          body { background: white !important; }
+          .print\\:hidden    { display: none !important; }
+          .print\\:shadow-none { box-shadow: none !important; }
+          .print\\:rounded-none { border-radius: 0 !important; }
         }
       `}</style>
     </div>

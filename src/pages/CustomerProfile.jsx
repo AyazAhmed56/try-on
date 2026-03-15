@@ -69,7 +69,7 @@ const CustomerProfile = () => {
     });
 
     setSaving(false);
-    navigate("/customer/home");
+    navigate("/customer/dashboard");
   };
 
   const inp = (name) => ({
