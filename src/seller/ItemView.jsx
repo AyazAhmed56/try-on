@@ -11,7 +11,7 @@ import {
   Sparkles,
   Edit3,
 } from "lucide-react";
-import BackButtonByRole from "./BackButtonByRole";
+import BackButtonByRole from "../pages/BackButtonByRole";
 
 const ItemView = () => {
   const { id } = useParams();
@@ -21,18 +21,43 @@ const ItemView = () => {
 
   useEffect(() => {
     const fetchItem = async () => {
-      const { data, error } = await supabase
-        .from("outfits")
-        .select(
-          `*, outfit_images(*), outfit_variants(*), outfit_reviews(rating, review_text)`,
-        )
-        .eq("id", id)
-        .single();
-      if (!error) {
+      try {
+        const { data, error } = await supabase
+          .from("outfits")
+          .select(
+            `
+          id,
+          name,
+          description,
+          price,
+          discount_price,
+          stock_quantity,
+          category,
+          brand,
+          material,
+          care_instructions,
+          outfit_images(id,image_url,is_main),
+          outfit_variants(size,color),
+          outfit_reviews(rating, review)
+        `,
+          )
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+
+        const mainImage =
+          data.outfit_images?.find((i) => i.is_main)?.image_url ||
+          data.outfit_images?.[0]?.image_url ||
+          null;
+
         setItem(data);
-        setActiveImage(data.outfit_images.find((i) => i.is_main)?.image_url);
+        setActiveImage(mainImage);
+      } catch (err) {
+        console.error("Error fetching item:", err);
       }
     };
+
     fetchItem();
   }, [id]);
 
@@ -61,9 +86,10 @@ const ItemView = () => {
     );
   }
 
-  const avgRating =
-    item.outfit_reviews.reduce((s, r) => s + r.rating, 0) /
-    (item.outfit_reviews.length || 1);
+  const avgRating = item.outfit_reviews?.length
+    ? item.outfit_reviews.reduce((s, r) => s + r.rating, 0) /
+      item.outfit_reviews.length
+    : 0;
   const mainImage = item.outfit_images.find((i) => i.is_main)?.image_url;
   const additionalImages = item.outfit_images.filter((i) => !i.is_main);
   const uniqueSizes = [...new Set(item.outfit_variants.map((v) => v.size))];
@@ -308,7 +334,7 @@ const ItemView = () => {
                   <span style={{ fontSize: 14, color: "#374151" }}>
                     Stock Available:{" "}
                     <span style={{ color: "#16A34A", fontWeight: 700 }}>
-                      {item.stock}
+                      {item.stock_quantity}
                     </span>{" "}
                     units
                   </span>
@@ -543,7 +569,7 @@ const ItemView = () => {
                   <p
                     style={{ fontSize: 14, color: "#4B5563", lineHeight: 1.65 }}
                   >
-                    {review.review_text}
+                    {review.review}
                   </p>
                 </div>
               ))}

@@ -61,52 +61,83 @@ const ProductDetails = () => {
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
+
       const { data, error } = await supabase
         .from("outfits")
         .select(
-          `*, outfit_images (id, image_url, is_main), seller_profiles (id, business_name, email, phone, address, rating, total_sales)`,
+          `
+        id,
+        name,
+        price,
+        discount_price,
+        description,
+        stock_quantity,
+        category,
+        subcategory,
+        material,
+        care_instructions,
+        seller_id,
+        outfit_images(id, image_url, is_main),
+        seller_profiles!seller_id(
+          user_id,
+          shop_name,
+          address,
+          city,
+          state,
+          pincode,
+          shop_logo
+        )
+      `,
         )
         .eq("id", id)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
+
       if (!data) {
         setProduct(null);
         return;
       }
 
       const sortedImages =
-        data.outfit_images?.sort((a, b) => b.is_main - a.is_main) || [];
+        data.outfit_images?.sort(
+          (a, b) => (b.is_main === true) - (a.is_main === true),
+        ) || [];
+
+      const seller = Array.isArray(data.seller_profiles)
+        ? data.seller_profiles[0]
+        : data.seller_profiles;
+
       setProduct({
         id: data.id,
         name: data.name,
-        price: parseFloat(data.price) || 0,
-        discountPrice: parseFloat(data.discount_price) || 0,
+        price: Number(data.price) || 0,
+        discountPrice: Number(data.discount_price) || 0,
         description: data.description || "",
         stock: data.stock_quantity || 0,
         images: sortedImages,
-        rating: data.rating || 0,
-        reviewCount: data.review_count || 0,
-        category: data.category || "Fashion",
+        category: data.category || "",
         subcategory: data.subcategory || "",
-        material: data.material || "Premium Fabric",
-        care: data.care || "Machine wash cold",
-        features: data.features || [
-          "High Quality",
-          "Comfort Fit",
-          "Stylish Design",
-        ],
-        seller: data.seller_profiles || {
-          business_name: "Unknown Seller",
-          rating: 0,
-          email: "",
-          phone: "",
+        material: data.material || "",
+        care: data.care_instructions || "",
+
+        rating: 0,
+        reviewCount: 0,
+
+        features: ["High Quality", "Comfort Fit", "Stylish Design"],
+
+        seller: seller || {
+          shop_name: "Unknown Seller",
           address: "",
-          total_sales: 0,
+          city: "",
+          state: "",
+          pincode: "",
+          shop_logo: null,
         },
       });
     } catch (error) {
       console.error("Fetch error:", error);
+      setProduct(null);
     } finally {
       setLoading(false);
     }
@@ -129,8 +160,16 @@ const ProductDetails = () => {
   const fetchReviews = async (productId) => {
     try {
       const { data, error } = await supabase
-        .from("reviews")
-        .select(`id, rating, comment, created_at, users(name)`)
+        .from("outfit_reviews")
+        .select(
+          `
+    id,
+    rating,
+    comment,
+    created_at,
+    profiles(name)
+  `,
+        )
         .eq("outfit_id", productId)
         .order("created_at", { ascending: false });
       if (error) {
@@ -140,7 +179,7 @@ const ProductDetails = () => {
       setReviews(
         data.map((r) => ({
           id: r.id,
-          user: r.users?.name || "Anonymous",
+          user: r.profiles?.name || "Anonymous",
           rating: r.rating,
           comment: r.comment,
           date: r.created_at,
@@ -532,7 +571,14 @@ const ProductDetails = () => {
             {/* CTA Buttons */}
             <div className="space-y-2.5">
               <button
-                onClick={() => navigate("/try-on")}
+                onClick={() =>
+                  navigate(`/customer/try-on/${product.id}`, {
+                    state: {
+                      outfit: product,
+                      productImage: product.images?.[0]?.image_url,
+                    },
+                  })
+                }
                 className="w-full py-3.5 px-6 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 shadow-md shadow-green-200 hover:shadow-lg hover:shadow-green-300 transition-all active:scale-[0.98]"
                 style={{
                   background: "linear-gradient(135deg, #16a34a, #059669)",
@@ -658,12 +704,11 @@ const ProductDetails = () => {
                             "linear-gradient(135deg, #16a34a, #059669)",
                         }}
                       >
-                        {product.seller.business_name?.[0]?.toUpperCase() ||
-                          "S"}
+                        {product.seller.shop_name?.[0]?.toUpperCase() || "S"}
                       </div>
                       <div>
                         <h3 className="text-base font-bold text-gray-900">
-                          {product.seller.business_name}
+                          {product.seller.shop_name}
                         </h3>
                         <div className="flex items-center gap-1 mt-1">
                           {[...Array(5)].map((_, i) => (

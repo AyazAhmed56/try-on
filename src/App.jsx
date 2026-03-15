@@ -15,7 +15,7 @@ import SellerOrder from "./seller/SellerOrder";
 import UnifiedHomePage from "./pages/UnifiedHomePage";
 import SellerItemReviews from "./seller/SellerItemReviews";
 import OtherSellerReviewsAndItems from "./seller/OtherSellerReviewsAndItems";
-import ItemView from "./pages/ItemView";
+import ItemView from "./seller/ItemView";
 import CookiePolicy from "./components/CookiePolicy";
 import OrderReceipt from "./seller/OrderReceipt";
 import BrowseProducts from "./customer/BrowseProducts";

@@ -30,6 +30,7 @@ const SellerDashboard = () => {
   ]);
   const [myItems, setMyItems] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
+  const [seller, setSeller] = useState(null);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -42,6 +43,39 @@ const SellerDashboard = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      // seller shop
+      const { data: sellerProfile } = await supabase
+        .from("seller_profiles")
+        .select("shop_name")
+        .eq("user_id", user.id)
+        .single();
+
+      // avatar from profiles table
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .single();
+
+      let avatarUrl = null;
+
+      if (profile?.avatar_url) {
+        const { data } = supabase.storage
+          .from("avatars") // your storage bucket name
+          .getPublicUrl(profile.avatar_url);
+
+        avatarUrl = data.publicUrl;
+      }
+
+      setSeller({
+        name: sellerProfile?.shop_name || "Seller",
+        email: user.email,
+        avatar_url: avatarUrl,
+      });
+      
       if (!user) return;
 
       const [{ count: productCount }, { count: orderCount }] =
@@ -178,23 +212,48 @@ const SellerDashboard = () => {
         >
           {/* Logo */}
           <div className="p-5 border-b border-gray-100">
-            <Link to="/" className="flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
-                style={{
-                  background: "linear-gradient(135deg, #16a34a, #059669)",
-                }}
+            <div className="px-5 py-5 border-b border-green-100 flex items-center justify-between">
+              <Link to="/" className="no-underline">
+                <div className="text-gradient font-display text-2xl tracking-tight leading-tight">
+                  VirtualFit
+                </div>
+                <div className="text-gray-400 text-xs mt-0.5">
+                  Seller Portal
+                </div>
+              </Link>
+
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="lg:hidden bg-transparent border-none cursor-pointer text-gray-400 p-1 hover:text-gray-600 transition-colors"
               >
-                <Leaf
-                  className="w-4.5 h-4.5 text-white"
-                  style={{ width: "18px", height: "18px" }}
-                />
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="px-4 py-3.5 border-b border-green-100">
+              <div className="flex items-center gap-2.5 px-3.5 py-3 bg-linear-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100">
+                <div className="w-10 h-10 rounded-full bg-green-grad flex items-center justify-center text-white font-bold text-base shrink-0 overflow-hidden">
+                  {seller?.avatar_url ? (
+                    <img
+                      src={seller.avatar_url}
+                      alt="Seller"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{seller?.name?.[0]?.toUpperCase() || "S"}</span>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate m-0">
+                    {seller?.name || "Seller"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate m-0">
+                    {seller?.email || ""}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-base font-bold text-gray-900">Try-on</h1>
-                <p className="text-xs text-gray-400">Seller Dashboard</p>
-              </div>
-            </Link>
+            </div>
           </div>
 
           {/* Nav */}
@@ -224,7 +283,7 @@ const SellerDashboard = () => {
           </nav>
 
           {/* Logout */}
-          <div className="p-3 border-t border-gray-100">
+          <div className="p-3 border-t border-gray-100 sticky bottom-0 bg-white">
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-all"

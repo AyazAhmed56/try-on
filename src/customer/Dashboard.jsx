@@ -84,7 +84,7 @@ const Dashboard = () => {
   const location = useLocation();
 
   const quickActions = [
-    { icon: Camera, label: "Virtual Try-On", route: "/customer/products" },
+    { icon: Camera, label: "Virtual Try-On", route: "/customer/try-on" },
     { icon: ShoppingBag, label: "Shop Now", route: "/customer/products" },
     { icon: Package, label: "Track Order", route: "/customer/orders" },
     { icon: Heart, label: "My Wishlist", route: "/customer/wishlist" },

@@ -136,7 +136,7 @@ const OrderReceipt = () => {
             try again.
           </p>
           <Link
-            to="/customer/orders"
+            to="/order-list"
             className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200"
             style={{
               background: "linear-gradient(135deg,#16A34A,#10B981)",

@@ -34,7 +34,7 @@ const BackButtonByRole = () => {
     } else if (profile.role === "customer") {
       navigate("/customer/all-items");
     } else {
-      navigate("/");
+      navigate(-1);
     }
   };
 
