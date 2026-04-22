@@ -112,9 +112,10 @@ const SellerProfile = () => {
       shop_banner: bannerUrl,
       dob: e.target["Date-of-birth"].value,
       gender: e.target.Gender.value,
+      approved: false, // 🔥 IMPORTANT
     });
 
-    navigate("/seller/dashboard");
+    navigate("/seller/pending");
   };
 
   // Shared styles

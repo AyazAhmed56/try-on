@@ -29,15 +29,35 @@ const Login = () => {
     const user = data.user;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("*")
       .eq("id", user.id)
       .single();
 
     setLoading(false);
 
-    if (!profile) navigate("/role");
-    else if (profile.role === "seller") navigate("/seller/dashboard");
-    else navigate("/");
+    if (!profile) {
+      navigate("/role");
+    } else if (profile.role === "admin") {
+      navigate("/admin/dashboard");
+    } else if (profile.role === "seller") {
+      const { data: seller } = await supabase
+        .from("seller_profiles")
+        .select("approved")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!seller) {
+        navigate("/seller/profile"); // first time
+      } else if (!seller.approved) {
+        navigate("/seller/pending");
+      } else {
+        navigate("/seller/dashboard");
+      }
+    } else if (profile.role === "customer") {
+      navigate("/customer/dashboard");
+    } else {
+      navigate("/");
+    }
   };
 
   const inp = (name) => ({

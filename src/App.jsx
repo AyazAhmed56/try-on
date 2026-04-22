@@ -31,6 +31,15 @@ import TryOnPages from "./pages/TryOnPages";
 import VirtualTryOn from "./customer/VirtualTryOn";
 import AdminTryonUpload from "./admin/AdminTryonUpload";
 import Checkout from "./customer/Checkout";
+import SellerRoute from "./seller/SellerRoute";
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/AdminDashboard";
+import AdminProducts from "./admin/AdminProducts";
+import AdminOrders from "./admin/AdminOrders";
+import AdminCustomers from "./admin/AdminCustomers";
+import AdminSellers from "./admin/AdminSellers";
+import AdminRoute from "./admin/AdminRoute";
+import SellerPending from "./seller/SellerPending";
 
 const App = () => {
   return (
@@ -57,7 +66,14 @@ const App = () => {
           <Route path="/seller/items" element={<SellerItem />} />
           <Route path="/seller/items/:id" element={<ItemView />} />
           <Route path="/post-item/:id" element={<AdvancedPostItem />} />
-          <Route path="/seller/dashboard" element={<SellerDashboard />} />
+          <Route
+            path="/seller/dashboard"
+            element={
+              <SellerRoute>
+                <SellerDashboard />
+              </SellerRoute>
+            }
+          />
           <Route path="/post-item" element={<AdvancedPostItem />} />
           <Route path="/my-items" element={<SellerItem />} />
           <Route path="/order-list" element={<SellerOrder />} />
@@ -67,10 +83,25 @@ const App = () => {
             element={<OtherSellerReviewsAndItems />}
           />
           <Route path="/order-receipt" element={<OrderReceipt />} />
+          <Route path="/seller/pending" element={<SellerPending />} />
 
           {/* admin */}
           <Route path="/admin/upload" element={<AdminTryonUpload />} />
-
+          {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="customers" element={<AdminCustomers />} />
+            <Route path="sellers" element={<AdminSellers />} />
+          </Route>
           {/* other */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
