@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import {
   Star,
@@ -17,7 +17,7 @@ const ItemView = () => {
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -480,7 +480,7 @@ const ItemView = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-              <button
+              {/* <button
                 onClick={() => navigate(`/customer/try-on/${item.id}`)}
                 className="action-btn flex-1 py-3.5 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200"
                 style={{
@@ -491,7 +491,7 @@ const ItemView = () => {
               >
                 <Sparkles style={{ width: 17, height: 17 }} />
                 Virtual Try-On
-              </button>
+              </button> */}
               <Link
                 to={`/post-item/${item.id}`}
                 className="action-btn flex-1 py-3.5 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200"

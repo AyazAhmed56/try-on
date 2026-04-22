@@ -173,12 +173,12 @@ const SellerDashboard = () => {
       icon: MessageSquare,
       path: "/seller/reviews",
     },
-    {
-      id: "other-sellers",
-      label: "Other Sellers",
-      icon: Eye,
-      path: "/other-sellers-items-reviews",
-    },
+    // {
+    //   id: "other-sellers",
+    //   label: "Other Sellers",
+    //   icon: Eye,
+    //   path: "/other-sellers-items-reviews",
+    // },
     {
       id: "order-receipt",
       label: "Order Receipt",
@@ -232,8 +232,8 @@ const SellerDashboard = () => {
 
             <div className="px-4 py-3.5 border-b border-green-100">
               <div className="flex items-center gap-2.5 px-3.5 py-3 bg-linear-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100">
-                <div className="w-10 h-10 rounded-full bg-green-grad flex items-center justify-center text-white font-bold text-base shrink-0 overflow-hidden">
-                  {seller?.avatar_url ? (
+                {/* <div className="w-10 h-10 rounded-full bg-green-grad flex items-center justify-center text-white font-bold text-base shrink-0 overflow-hidden"> */}
+                  {/* {seller?.avatar_url ? (
                     <img
                       src={seller.avatar_url}
                       alt="Seller"
@@ -241,8 +241,8 @@ const SellerDashboard = () => {
                     />
                   ) : (
                     <span>{seller?.name?.[0]?.toUpperCase() || "S"}</span>
-                  )}
-                </div>
+                  )} */}
+                {/* </div> */}
 
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate m-0">

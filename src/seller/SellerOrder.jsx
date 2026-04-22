@@ -48,26 +48,26 @@ const SellerOrder = () => {
         id,
         created_at,
         quantity,
-        price,
-        tax,
-        shipping,
-        discount,
         total_amount,
         status,
-        delivery_date,
         payment_method,
-        transaction_id,
-        customer_name,
-        customer_email,
-        customer_phone,
         shipping_address,
-        outfits (
+
+        name,
+        email,
+        phone,
+
+        outfits!orders_outfit_id_fkey (
+          id,
           name,
-          outfit_images (image_url, is_main)
+          seller_id,
+          outfit_images (
+            image_url,
+            is_main
+          )
         )
       `,
         )
-        .eq("seller_id", user.id) // ✅ use auth user id
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -79,27 +79,46 @@ const SellerOrder = () => {
       console.log("Seller Orders:", data);
 
       setOrders(
-        (data || []).map((o) => ({
-          id: o.id,
-          customer: o.customer_name,
-          customerEmail: o.customer_email,
-          customerPhone: o.customer_phone,
-          address: o.shipping_address,
-          item: o.outfits?.name,
-          quantity: o.quantity,
-          amount: o.price,
-          tax: o.tax,
-          shipping: o.shipping,
-          discount: o.discount,
-          status: o.status,
-          date: o.created_at,
-          deliveryDate: o.delivery_date,
-          image:
-            o.outfits?.outfit_images?.find((i) => i.is_main)?.image_url ||
-            "https://via.placeholder.com/100x120?text=No+Image",
-          paymentMethod: o.payment_method,
-          transactionId: o.transaction_id,
-        })),
+        (data || []).map((o) => {
+          const product = o.outfits || {};
+
+          const image =
+            product?.outfit_images?.find((i) => i.is_main)?.image_url ||
+            "https://via.placeholder.com/100x120?text=No+Image";
+
+          const TAX = 50;
+          const SHIPPING = 40;
+
+          return {
+            id: o.id,
+
+            // ✅ DIRECT FROM ORDERS TABLE
+            customer: o.name || "Customer",
+            customerEmail: o.email || "N/A",
+            customerPhone: o.phone || "N/A",
+
+            address: o.shipping_address ?? "N/A",
+
+            item: product?.name ?? "Unknown Product",
+
+            quantity: o.quantity ?? 0,
+            amount: o.total_amount ?? 0,
+
+            tax: TAX,
+            shipping: SHIPPING,
+            discount: 0,
+
+            status: o.status
+              ? o.status.charAt(0).toUpperCase() + o.status.slice(1)
+              : "Pending",
+
+            date: o.created_at,
+            deliveryDate: null,
+
+            image,
+            paymentMethod: o.payment_method ?? "N/A",
+          };
+        }),
       );
 
       setLoading(false);
@@ -107,6 +126,28 @@ const SellerOrder = () => {
 
     fetchSellerOrders();
   }, []);
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: newStatus })
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      // Update UI instantly
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
+      );
+
+      setSelectedOrder((prev) =>
+        prev ? { ...prev, status: newStatus } : null,
+      );
+    } catch (err) {
+      console.error("Status update error:", err);
+    }
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -152,15 +193,18 @@ const SellerOrder = () => {
 
   const totalRevenue = orders
     .filter((o) => o.status !== "Cancelled")
-    .reduce((sum, o) => sum + o.amount + o.tax + o.shipping - o.discount, 0);
+    .reduce((sum, o) => sum + o.amount, 0);
 
   const statusCounts = {
     all: orders.length,
-    pending: orders.filter((o) => o.status === "Pending").length,
-    processing: orders.filter((o) => o.status === "Processing").length,
-    shipped: orders.filter((o) => o.status === "Shipped").length,
-    delivered: orders.filter((o) => o.status === "Delivered").length,
-    cancelled: orders.filter((o) => o.status === "Cancelled").length,
+    pending: orders.filter((o) => o.status.toLowerCase() === "pending").length,
+    processing: orders.filter((o) => o.status.toLowerCase() === "processing")
+      .length,
+    shipped: orders.filter((o) => o.status.toLowerCase() === "shipped").length,
+    delivered: orders.filter((o) => o.status.toLowerCase() === "delivered")
+      .length,
+    cancelled: orders.filter((o) => o.status.toLowerCase() === "cancelled")
+      .length,
   };
 
   const statusTabs = [
@@ -283,12 +327,7 @@ const SellerOrder = () => {
         <div className="space-y-4">
           {filteredOrders.map((order) => {
             const StatusIcon = getStatusIcon(order.status);
-            const totalAmount = (
-              order.amount +
-              order.tax +
-              order.shipping -
-              order.discount
-            ).toFixed(2);
+            const totalAmount = order.amount.toFixed(2);
 
             return (
               <div
@@ -558,13 +597,30 @@ const SellerOrder = () => {
                       Update Status
                     </h3>
                     <div className="grid grid-cols-2 gap-2.5">
-                      <button className="px-4 py-2.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
+                      <button
+                        onClick={() =>
+                          updateOrderStatus(selectedOrder.id, "Processing")
+                        }
+                        className="px-4 py-2.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl text-xs font-semibold hover:bg-amber-100"
+                      >
                         Mark as Processing
                       </button>
-                      <button className="px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl text-xs font-semibold hover:bg-blue-100 transition-colors">
+
+                      <button
+                        onClick={() =>
+                          updateOrderStatus(selectedOrder.id, "Shipped")
+                        }
+                        className="px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl text-xs font-semibold hover:bg-blue-100"
+                      >
                         Mark as Shipped
                       </button>
-                      <button className="col-span-2 px-4 py-2.5 bg-green-50 text-green-700 border border-green-100 rounded-xl text-xs font-semibold hover:bg-green-100 transition-colors">
+
+                      <button
+                        onClick={() =>
+                          updateOrderStatus(selectedOrder.id, "Delivered")
+                        }
+                        className="col-span-2 px-4 py-2.5 bg-green-50 text-green-700 border border-green-100 rounded-xl text-xs font-semibold hover:bg-green-100"
+                      >
                         Mark as Delivered
                       </button>
                     </div>

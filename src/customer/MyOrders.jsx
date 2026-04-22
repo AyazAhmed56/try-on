@@ -40,17 +40,34 @@ const MyOrders = () => {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (!user) return;
 
       const { data, error } = await supabase
         .from("orders")
         .select(
-          `id, created_at, quantity, total_amount, status, payment_method, shipping_address,
-          outfits(id, name, price, category, outfit_images(image_url, is_main)),
-          seller_profiles(shop_name)`,
+          `
+        id,
+        created_at,
+        quantity,
+        total_amount,
+        status,
+        payment_method,
+        shipping_address,
+        outfits (
+          id,
+          name,
+          price,
+          category,
+          seller_id,
+          outfit_images (image_url, is_main),
+          seller_profiles (shop_name)
+        )
+      `,
         )
         .eq("customer_id", user.id)
         .order("created_at", { ascending: false });
@@ -60,33 +77,51 @@ const MyOrders = () => {
         return;
       }
 
+      console.log("Orders:", data);
+
       setOrders(
         (data || []).map((order) => {
           const product = order.outfits || {};
+
           const mainImage =
             product?.outfit_images?.find((img) => img.is_main)?.image_url ||
             null;
+
           return {
             id: order.id,
-            orderId: `ORD-${order.id.slice(0, 6).toUpperCase()}`,
+
+            orderId: order.id
+              ? `ORD-${order.id.slice(0, 6).toUpperCase()}`
+              : "ORD-XXXX",
+
             date: new Date(order.created_at).toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",
               day: "numeric",
             }),
+
+            seller_id: product?.seller_id ?? null,
+
             quantity: order.quantity ?? 0,
             total: order.total_amount ?? 0,
-            status: order.status ?? "Pending",
+
+            // ✅ FIXED STATUS
+            status: order.status
+              ? order.status.charAt(0).toUpperCase() + order.status.slice(1)
+              : "Pending",
+
             paymentMethod: order.payment_method ?? "N/A",
             shippingAddress: order.shipping_address ?? "N/A",
+
             product: {
               name: product?.name ?? "Unknown Product",
               category: product?.category ?? "N/A",
               price: product?.price ?? 0,
               image: mainImage,
             },
+
             seller: {
-              name: order?.seller_profiles?.shop_name ?? "Unknown Seller",
+              name: product?.seller_profiles?.shop_name ?? "Unknown Seller",
             },
           };
         }),
