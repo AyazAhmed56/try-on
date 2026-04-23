@@ -107,7 +107,7 @@ const Dashboard = () => {
     { icon: Heart, label: "Wishlist", route: "/customer/wishlist" },
     { icon: User, label: "Profile", route: "/customer/profile" },
     { icon: ShoppingCart, label: "Cart", route: "/customer/cart" },
-    { icon: CreditCard, label: "Payment Methods", route: "/customer/payments" },
+    // { icon: CreditCard, label: "Payment Methods", route: "/customer/payments" },
     { icon: Bell, label: "Notifications", route: "/customer/notifications" },
     { icon: Settings, label: "Settings", route: "/customer/settings" },
   ];

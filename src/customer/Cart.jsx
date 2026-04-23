@@ -177,13 +177,14 @@ const Cart = () => {
   };
 
   const proceedToCheckout = () => {
-    navigate("/customer/checkout", {
-      state: {
-        cartItems,
-      },
-    });
+    navigate("/customer/checkout");
+    //   {
+    //   state: {
+    //     cartItems,
+    //   },
+    // }
   };
-  
+
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,

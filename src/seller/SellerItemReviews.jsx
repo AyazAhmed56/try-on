@@ -41,8 +41,14 @@ const SellerItemReviews = () => {
       const { data, error } = await supabase
         .from("outfit_reviews")
         .select(
-          `id, rating, review_text, helpful_count, is_verified, created_at,
-          outfits(name), customer_profiles(full_name)`,
+          `
+    id,
+    rating,
+    review,
+    created_at,
+    outfits(name),
+    profiles(name)
+  `,
         )
         .order("created_at", { ascending: false });
 
@@ -55,18 +61,18 @@ const SellerItemReviews = () => {
       setReviews(
         data.map((r) => ({
           id: r.id,
-          customerName: r.customer_profiles?.full_name || "Anonymous",
+          customerName: r.profiles?.name || "Anonymous",
           avatar:
-            r.customer_profiles?.full_name
+            r.profiles?.full_name
               ?.split(" ")
               .map((n) => n[0])
               .join("") || "U",
           rating: r.rating,
           date: r.created_at,
-          verified: r.is_verified,
+          verified: false,
           itemName: r.outfits?.name || "Unknown Item",
-          review: r.review_text,
-          helpful: r.helpful_count || 0,
+          review: r.review,
+          helpful: 0,
           images: [],
         })),
       );
