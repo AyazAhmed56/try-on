@@ -23,6 +23,10 @@ const Checkout = () => {
   const [profile, setProfile] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [placing, setPlacing] = useState(false);
+  const [showPaymentUI, setShowPaymentUI] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [upiId, setUpiId] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
   //   const [focusedPay, setFocusedPay] = useState(false);
 
   useEffect(() => {
@@ -54,23 +58,26 @@ const Checkout = () => {
     console.log("Seller ID being inserted:", product?.seller?.user_id);
     const { error } = await supabase.from("orders").insert({
       customer_id: user.id,
-      customer_name: profile.name,
-      customer_email: profile.email,
-      customer_phone: profile.phone,
-      shipping_address: `${profile.address}\n${profile.city}\n${profile.state}\n${profile.pincode}`,
+
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+
+      shipping_address: profile.address,
+      city: profile.city,
+      state: profile.state,
+      pincode: profile.pincode,
+
       outfit_id: product.id,
       seller_id: product?.seller?.user_id,
+
       quantity,
       price,
-      tax,
-      shipping,
-      discount,
       total_amount: total,
-      payment_method: paymentMethod,
-      transaction_id: null,
-      status: "Pending",
-    });
 
+      payment_method: paymentMethod,
+      status: "pending",
+    });
     setPlacing(false);
     if (error) {
       console.log(error);
@@ -79,6 +86,23 @@ const Checkout = () => {
     }
     alert("Order placed successfully");
     navigate("/customer/orders");
+  };
+
+  const handleFakePayment = async () => {
+    if (!upiId && !cardNumber) {
+      alert("Enter UPI or Card details");
+      return;
+    }
+
+    // simulate delay
+    setTimeout(async () => {
+      setPaymentSuccess(true);
+      setShowPaymentUI(false);
+
+      alert("Payment Successful ✅");
+
+      await placeOrder(); // 🔥 now order placed AFTER payment
+    }, 1500);
   };
 
   if (!product)
@@ -417,6 +441,16 @@ const Checkout = () => {
                     )}
                   </label>
                 ))}
+                {paymentMethod === "Online" && (
+                  <div className="mt-4 p-4 border rounded-xl bg-green-50">
+                    <button
+                      onClick={() => setShowPaymentUI(true)}
+                      className="w-full bg-green-600 text-white py-2 rounded"
+                    >
+                      Pay ₹{total.toFixed(2)}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -510,7 +544,7 @@ const Checkout = () => {
                 {/* Place order button */}
                 <button
                   onClick={placeOrder}
-                  disabled={placing || !profile}
+                  disabled={placing || !profile || paymentMethod === "Online"}
                   className="place-btn w-full flex items-center justify-center gap-2 py-4 text-white font-bold rounded-2xl transition-all duration-200"
                   style={{
                     background:
@@ -549,6 +583,45 @@ const Checkout = () => {
             </div>
           </div>
         </div>
+        {showPaymentUI && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-2xl w-87.5">
+              <h3 className="font-bold text-lg mb-3">Complete Payment</h3>
+
+              {/* UPI */}
+              <input
+                type="text"
+                placeholder="Enter UPI ID"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                className="w-full border p-2 rounded mb-3"
+              />
+
+              {/* Card */}
+              <input
+                type="text"
+                placeholder="Card Number"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
+                className="w-full border p-2 rounded mb-3"
+              />
+
+              <button
+                onClick={handleFakePayment}
+                className="w-full bg-green-600 text-white py-2 rounded"
+              >
+                Pay Now
+              </button>
+
+              <button
+                onClick={() => setShowPaymentUI(false)}
+                className="w-full mt-2 text-sm text-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`

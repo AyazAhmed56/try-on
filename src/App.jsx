@@ -102,6 +102,7 @@ const App = () => {
             <Route path="users" element={<AdminCustomers />} />
             <Route path="sellers" element={<AdminSellers />} />
           </Route>
+          
           {/* other */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

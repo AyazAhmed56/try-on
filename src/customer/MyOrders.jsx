@@ -17,9 +17,8 @@ import {
 } from "lucide-react";
 import { supabase } from "../services/supabase";
 import { Link, useNavigate } from "react-router-dom";
-import jsPDF from "jspdf";
 import "jspdf-autotable";
-import autoTable from "jspdf-autotable";
+import html2pdf from "html2pdf.js";
 
 const statusStyles = {
   Delivered: { bg: "#DCFCE7", color: "#15803D", border: "#BBF7D0" },
@@ -51,23 +50,20 @@ const MyOrders = () => {
         .from("orders")
         .select(
           `
-        id,
-        created_at,
-        quantity,
-        total_amount,
-        status,
-        payment_method,
-        shipping_address,
-        outfits (
-          id,
-          name,
-          price,
-          category,
-          seller_id,
-          outfit_images (image_url, is_main),
-          seller_profiles (shop_name)
-        )
-      `,
+  *,
+  outfits (
+    name,
+    seller_profiles (
+      shop_name,
+      gst_no,
+      address,
+      city,
+      state,
+      pincode,
+      shop_logo
+    )
+  )
+`,
         )
         .eq("customer_id", user.id)
         .order("created_at", { ascending: false });
@@ -88,6 +84,8 @@ const MyOrders = () => {
             null;
 
           return {
+            ...order, // ⭐ ADD THIS LINE (IMPORTANT)
+
             id: order.id,
 
             orderId: order.id
@@ -151,23 +149,178 @@ const MyOrders = () => {
     );
   }, [searchQuery, orders]);
 
-  const generatePDF = (order) => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Order Invoice", 20, 20);
-    autoTable(doc, {
-      startY: 40,
-      head: [["Product", "Category", "Qty", "Price"]],
-      body: [
-        [
-          order.product.name,
-          order.product.category,
-          order.quantity,
-          `₹${order.total}`,
-        ],
-      ],
-    });
-    doc.save(`${order.orderId}.pdf`);
+  const handleDownload = (order) => {
+    const element = document.createElement("div");
+    const seller = order.outfits?.seller_profiles || {};
+
+    const shopInitial = (seller.shop_name || "S").charAt(0).toUpperCase();
+    const shopLocation = [seller.city, seller.state].filter(Boolean).join(", ");
+    const shopAddress = [
+      seller.address,
+      seller.city,
+      seller.state,
+      seller.pincode ? "- " + seller.pincode : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const orderDate = order.date; // instead of created_at
+    const orderId = "#" + String(order.id).slice(0, 8).toUpperCase();
+
+    element.innerHTML = `
+  <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+  
+    <!-- TOP ACCENT -->
+    <div style="height: 3px; background: #3B6D11;"></div>
+  
+    <!-- HEADER -->
+    <div style="padding: 28px 32px 20px; border-bottom: 1px solid #e5e7eb;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          ${
+            seller.shop_logo
+              ? `<img src="${seller.shop_logo}" style="width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0;" />`
+              : `<div style="width:48px; height:48px; background:#EAF3DE; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:500; color:#3B6D11; flex-shrink:0;">${shopInitial}</div>`
+          }
+          <div>
+            <p style="margin:0 0 2px; font-size:17px; font-weight:600; color:#111827;">${seller.shop_name || "Your Store"}</p>
+            <p style="margin:0; font-size:12px; color:#6b7280;">${shopAddress || "Mumbai, Maharashtra"}</p>
+            ${seller.gst_no ? `<p style="font-size:11px; color:#9ca3af; margin:2px 0 0;">GST: ${seller.gst_no}</p>` : ""}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <p style="margin:0 0 4px; font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px;">Document</p>
+          <p style="margin:0 0 8px; font-size:14px; font-weight:500; color:#111827;">Tax Invoice</p>
+          <span style="background:#EAF3DE; color:#27500A; font-size:11px; font-weight:500; padding:3px 10px; border-radius:20px;">${order.status || "Pending"}</span>
+        </div>
+      </div>
+    </div>
+  
+    <!-- META ROW -->
+    <div style="display:flex; justify-content:space-between; background:#f9fafb; padding:16px 32px; border-bottom:1px solid #e5e7eb;">
+      <div>
+        <p style="margin:0 0 3px; font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px;">Order ID</p>
+        <p style="margin:0; font-size:13px; font-weight:600; color:#111827; font-family:monospace;">${orderId}</p>
+      </div>
+      <div style="text-align:center;">
+        <p style="margin:0 0 3px; font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px;">Quantity</p>
+        <p style="margin:0; font-size:13px; font-weight:600; color:#111827;">${order.quantity} item${order.quantity > 1 ? "s" : ""}</p>
+      </div>
+      <div style="text-align:right;">
+        <p style="margin:0 0 3px; font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px;">Date</p>
+        <p style="margin:0; font-size:13px; font-weight:600; color:#111827;">${orderDate}</p>
+      </div>
+    </div>
+  
+    <!-- BODY -->
+    <div style="padding:24px 32px;">
+  
+      <!-- CUSTOMER INFO -->
+      <p style="margin:0 0 12px; font-size:10px; font-weight:600; color:#3B6D11; text-transform:uppercase; letter-spacing:1px;">Customer Info</p>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <tr>
+          <td style="width:50%; padding-right:8px; vertical-align:top;">
+            <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px;">
+              <p style="margin:0 0 8px; font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px;">Bill To</p>
+              <p style="margin:0 0 4px; font-size:14px; font-weight:600; color:#111827;">${order.name || "—"}</p>
+              <p style="margin:0 0 3px; font-size:12px; color:#6b7280;">${order.email || "—"}</p>
+              <p style="margin:0; font-size:12px; color:#6b7280;">${order.phone || "—"}</p>
+            </div>
+          </td>
+          <td style="width:50%; padding-left:8px; vertical-align:top;">
+            <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px;">
+              <p style="margin:0 0 8px; font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px;">Ship To</p>
+              <p style="margin:0; font-size:12px; color:#374151; line-height:1.7;">${order.shipping_address || "—"}</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+  
+      <!-- ITEMS TABLE -->
+      <p style="margin:0 0 12px; font-size:10px; font-weight:600; color:#3B6D11; text-transform:uppercase; letter-spacing:1px;">Items Ordered</p>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+        <thead>
+          <tr style="border-bottom:1px solid #e5e7eb;">
+            <th style="padding:8px 0; font-size:10px; font-weight:500; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px; text-align:left;">Product</th>
+            <th style="padding:8px 0; font-size:10px; font-weight:500; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px; text-align:center;">Qty</th>
+            <th style="padding:8px 0; font-size:10px; font-weight:500; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px; text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f3f4f6;">
+            <td style="padding:14px 0; font-size:14px; color:#111827;">${order.outfits?.name || "—"}</td>
+            <td style="padding:14px 0; font-size:13px; color:#6b7280; text-align:center;">${order.quantity}</td>
+            <td style="padding:14px 0; font-size:14px; font-weight:600; color:#111827; text-align:right;">₹${order.total_amount}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <!-- TOTALS -->
+      <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <tr>
+          <td style="width:55%;"></td>
+          <td style="width:45%; vertical-align:top; padding-top:8px;">
+            <div style="font-size:13px;">
+              <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f3f4f6;">
+                <span style="color:#6b7280;">Subtotal</span>
+                <span style="color:#111827;">₹${order.total_amount}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f3f4f6;">
+                <span style="color:#6b7280;">Shipping</span>
+                <span style="color:#3B6D11; font-weight:500;">Free</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#EAF3DE; border-radius:8px; padding:12px 14px; margin-top:8px;">
+                <span style="font-size:11px; font-weight:600; color:#27500A; text-transform:uppercase; letter-spacing:0.5px;">Total</span>
+                <span style="font-size:18px; font-weight:700; color:#173404;">₹${order.total}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+  
+      <!-- PAYMENT -->
+      <p style="margin:0 0 12px; font-size:10px; font-weight:600; color:#3B6D11; text-transform:uppercase; letter-spacing:1px;">Payment</p>
+      <div style="display:flex; align-items:center; justify-content:space-between; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px 16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; background:#EAF3DE; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="width:18px; height:12px; background:#639922; border-radius:2px;"></div>
+          </div>
+          <div>
+            <p style="margin:0 0 2px; font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px;">Payment Method</p>
+            <p style="margin:0; font-size:14px; font-weight:600; color:#111827;">${order.payment_method || "—"}</p>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="width:7px; height:7px; background:#3B6D11; border-radius:50%;"></div>
+          <span style="font-size:12px; color:#3B6D11; font-weight:500;">Confirmed</span>
+        </div>
+      </div>
+  
+    </div>
+  
+    <!-- FOOTER -->
+    <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:20px 32px; text-align:center;">
+      <p style="margin:0 0 4px; font-size:14px; font-weight:600; color:#111827;">Thank you for your purchase!</p>
+      <p style="margin:0 0 16px; font-size:12px; color:#6b7280;">For support, reply to your order confirmation email.</p>
+      <div style="border-top:1px solid #e5e7eb; padding-top:14px; display:flex; justify-content:space-between;">
+        <span style="font-size:11px; color:#9ca3af;">${seller.shop_name || "Store"} · ${shopLocation || "India"}</span>
+        <span style="font-size:11px; color:#9ca3af;">© ${new Date().getFullYear()} All rights reserved</span>
+      </div>
+    </div>
+  
+    <!-- BOTTOM ACCENT -->
+    <div style="height:3px; background:#3B6D11;"></div>
+  
+  </div>`;
+
+    html2pdf()
+      .set({
+        margin: 0,
+        filename: `receipt-${order.id}.pdf`,
+        html2canvas: { scale: 3, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      })
+      .from(element)
+      .save();
   };
 
   const totalSpent = orders.reduce((s, o) => s + o.total, 0);
@@ -520,7 +673,7 @@ const MyOrders = () => {
                     </p>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => generatePDF(order)}
+                        onClick={() => handleDownload(order)}
                         className="action-btn flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all duration-200"
                         style={{
                           background: "linear-gradient(135deg,#16A34A,#10B981)",

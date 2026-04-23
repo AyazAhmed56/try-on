@@ -40,7 +40,9 @@ const ProductDetails = () => {
   const [userId, setUserId] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [activeTab, setActiveTab] = useState("description");
-
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newRating, setNewRating] = useState(5);
+  const [newReview, setNewReview] = useState("");
   const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
   useEffect(() => {
@@ -79,14 +81,18 @@ const ProductDetails = () => {
         seller_id,
         outfit_images(id, image_url, is_main),
         seller_profiles!seller_id(
-          user_id,
-          shop_name,
-          address,
-          city,
-          state,
-          pincode,
-          shop_logo
-        )
+  user_id,
+  shop_name,
+  address,
+  city,
+  state,
+  pincode,
+  shop_logo,
+  profiles (
+    email,
+    phone
+  )
+)
       `,
         )
         .eq("id", id)
@@ -104,9 +110,16 @@ const ProductDetails = () => {
           (a, b) => (b.is_main === true) - (a.is_main === true),
         ) || [];
 
-      const seller = Array.isArray(data.seller_profiles)
+      const rawSeller = Array.isArray(data.seller_profiles)
         ? data.seller_profiles[0]
         : data.seller_profiles;
+
+      const seller = {
+        ...rawSeller,
+        email: rawSeller?.profiles?.email || "N/A",
+        phone: rawSeller?.profiles?.phone || null,
+        total_sales: 0, // optional (you can calculate later)
+      };
 
       setProduct({
         id: data.id,
@@ -167,7 +180,7 @@ const ProductDetails = () => {
     rating,
     review,
     created_at,
-    profiles(name)
+    profiles!customer_id(name)
   `,
         )
         .eq("outfit_id", productId)
@@ -186,9 +199,52 @@ const ProductDetails = () => {
           verified: true,
         })),
       );
+      if (data.length > 0) {
+        const avg =
+          data.reduce((sum, r) => sum + (r.rating || 0), 0) / data.length;
+
+        setProduct((prev) => ({
+          ...prev,
+          rating: avg,
+          reviewCount: data.length,
+        }));
+      }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const submitReview = async () => {
+    if (!userId) {
+      alert("Login required");
+      return;
+    }
+
+    if (!newReview) {
+      alert("Write something");
+      return;
+    }
+
+    const { error } = await supabase.from("outfit_reviews").insert({
+      outfit_id: id,
+      customer_id: userId,
+      rating: newRating,
+      review: newReview,
+    });
+
+    if (error) {
+      console.error(error);
+      alert("Failed to submit review");
+      return;
+    }
+
+    alert("Review added!");
+
+    setShowReviewForm(false);
+    setNewReview("");
+    setNewRating(5);
+
+    fetchReviews(id); // 🔥 refresh reviews
   };
 
   useEffect(() => {
@@ -849,9 +905,44 @@ const ProductDetails = () => {
                     style={{
                       background: "linear-gradient(135deg, #16a34a, #059669)",
                     }}
+                    onClick={() => setShowReviewForm(true)}
                   >
                     Write a Review
                   </button>
+                  {showReviewForm && (
+                    <div className="border p-4 rounded-xl bg-gray-50 mt-4">
+                      <h4 className="font-semibold mb-2">Write Review</h4>
+
+                      <div className="mb-2">
+                        <label>Rating:</label>
+                        <select
+                          value={newRating}
+                          onChange={(e) => setNewRating(Number(e.target.value))}
+                          className="ml-2 border p-1"
+                        >
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <option key={n} value={n}>
+                              {n}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <textarea
+                        placeholder="Write your review..."
+                        value={newReview}
+                        onChange={(e) => setNewReview(e.target.value)}
+                        className="w-full border p-2 rounded mb-2"
+                      />
+
+                      <button
+                        onClick={submitReview}
+                        className="bg-green-600 text-white px-4 py-2 rounded"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
